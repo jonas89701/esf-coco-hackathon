@@ -144,9 +144,10 @@ coco/
 
 **Risks & mitigation:**
 
-Dataset: https://www.kaggle.com/datasets/techsash/waste-classification-data?resource=download
 * **Demo must never fail:** pre-bake 2–3 sample images that we know score well; fall back to them if the camera input misbehaves.
 * **Model download size/time:** pin a small model variant (e.g. YOLO11n) and cache weights in the repo instructions.
 * **Canteen lighting/angles:** run detection on clear top-down photos; mention in the pitch video demo walk-through.
+
+Dataset: https://www.kaggle.com/datasets/techsash/waste-classification-data?resource=download
 
 (End of spec)
