@@ -4,3 +4,4 @@ opencv-python>=4.10
 Pillow>=10.0
 numpy>=1.26
 pytest>=8.0
+clip @ git+https://github.com/ultralytics/CLIP.git

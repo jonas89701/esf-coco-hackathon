@@ -10,7 +10,7 @@ def annotateImage(img, detections):
 
     # default font is tiny, use the mac one if it exists
     try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
+        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 30)
     except OSError:
         font = ImageFont.load_default()
 
@@ -27,7 +27,7 @@ def annotateImage(img, detections):
         x2 = max(0, min(x2, imgCopy.width - 1))
         y2 = max(0, min(y2, imgCopy.height - 1))
 
-        draw.rectangle([x1, y1, x2, y2], outline="lime", width=2)
+        draw.rectangle([x1, y1, x2, y2], outline="lime", width=4)
 
         # label looks like "bottle 87%", conf isnt always in the dict
         classLabel = det.get("class", "unknown")

@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .ipynb_checkpoints/
+
+weights/*.pt
