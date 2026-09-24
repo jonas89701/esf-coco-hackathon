@@ -1,25 +1,25 @@
 # src/mapping.py
 
 WASTE_RULES = {
-    # --- Plastic Bottles ---
+    #Plastic Bottles
     "bottle":             ("Plastic bottles", "Recyclable", "Rinse, remove cap & label"),
     "plastic bottle":     ("Plastic bottles", "Recyclable", "Rinse, remove cap & label"),
 
-    # --- Metals ---
+    #Metals
     "can":                ("Metals",          "Recyclable", "Rinse, remove label"),
     "aluminium can":      ("Metals",          "Recyclable", "Rinse, remove label"),
 
-    # --- Glass ---
+    #Glass
     "glass bottle":       ("Glass",           "Recyclable", "Rinse, remove cap; no broken glass"),
 
-    # --- General Waste (Food Scraps) ---
+    #General Waste (Food Waste)
     "banana":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
     "apple":              ("General waste (food)", "General", "Compost if your school has food waste collection"),
     "orange":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
     "carrot":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
     "broccoli":           ("General waste (food)", "General", "Compost if your school has food waste collection"),
 
-    # --- General Waste (Cups & Containers) ---
+    #General Waste (Cups & Containers)
     "paper cup":          ("General waste",   "General",    "Plastic-coated — not recyclable"),
     "plastic cup":        ("General waste",   "General",    "Not accepted in recycling bins"),
     "cup":                ("General waste",   "General",    "Not accepted in recycling bins"),
@@ -27,7 +27,7 @@ WASTE_RULES = {
     "sandwich":           ("General waste",   "General",    "Greasy food waste — not recyclable"),
     "pizza":              ("General waste",   "General",    "Greasy food waste — not recyclable"),
 
-    # --- Special Collection (Liquid Cartons) ---
+    #Special Collection (Liquid Cartons)
     "milk carton":        ("Special — Green@Community", "Special", "Wash, dry, remove cap; NOT the street bin"),
     "liquid carton":      ("Special — Green@Community", "Special", "Wash, dry, remove cap; NOT the street bin"),
 }
