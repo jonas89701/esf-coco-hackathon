@@ -1,35 +1,35 @@
 # src/mapping.py
 
 WASTE_RULES = {
-    #Blue Bin: Plastics & Metals
-    "bottle":   ("Blue — Plastics & Metals", "Recyclable", "Rinse, remove lid/cap"),
-    "cup":      ("Blue — Plastics & Metals", "Recyclable", "Rinse, remove lid/cap"),
-    "bowl":     ("Blue — Plastics & Metals", "Recyclable", "Rinse, remove lid/cap"),
-    "fork":     ("Blue — Plastics & Metals", "Recyclable", "Wipe clean, flatten if possible"),
-    "knife":    ("Blue — Plastics & Metals", "Recyclable", "Wipe clean, flatten if possible"),
-    "spoon":    ("Blue — Plastics & Metals", "Recyclable", "Wipe clean, flatten if possible"),
-    "can":      ("Blue — Plastics & Metals", "Recyclable", "Wipe clean, flatten if possible"),
+    # --- Plastic Bottles ---
+    "bottle":             ("Plastic bottles", "Recyclable", "Rinse, remove cap & label"),
+    "plastic bottle":     ("Plastic bottles", "Recyclable", "Rinse, remove cap & label"),
 
-    #Yellow Bin: Waste Paper
-    "book":     ("Yellow — Waste Paper",     "Recyclable", "Keep dry, remove plastic coatings"),
-    "paper":    ("Yellow — Waste Paper",     "Recyclable", "Keep dry and clean"),
+    # --- Metals ---
+    "can":                ("Metals",          "Recyclable", "Rinse, remove label"),
+    "aluminium can":      ("Metals",          "Recyclable", "Rinse, remove label"),
 
-    #Green Bin: Glass
-    "wine glass": ("Green — Glass Bin",      "Recyclable", "Rinse clean, do not break"),
+    # --- Glass ---
+    "glass bottle":       ("Glass",           "Recyclable", "Rinse, remove cap; no broken glass"),
 
-    #Brown Bin: Organic Waste
-    "banana":   ("Brown — Organic Waste",    "Organic",    "No prep needed"),
-    "apple":    ("Brown — Organic Waste",    "Organic",    "No prep needed"),
-    "orange":   ("Brown — Organic Waste",    "Organic",    "No prep needed"),
-    "carrot":   ("Brown — Organic Waste",    "Organic",    "Compost if available"),
-    "broccoli": ("Brown — Organic Waste",    "Organic",    "Compost if available"),
+    # --- General Waste (Food Scraps) ---
+    "banana":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
+    "apple":              ("General waste (food)", "General", "Compost if your school has food waste collection"),
+    "orange":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
+    "carrot":             ("General waste (food)", "General", "Compost if your school has food waste collection"),
+    "broccoli":           ("General waste (food)", "General", "Compost if your school has food waste collection"),
 
-    #Grey Bin: General Waste
-    "sandwich": ("Grey — General Waste",     "General",    "Greasy food waste — not recyclable"),
-    "pizza":    ("Grey — General Waste",     "General",    "Greasy food waste — not recyclable"),
-    "hot dog":  ("Grey — General Waste",     "General",    "Greasy food waste — not recyclable"),
-    "donut":    ("Grey — General Waste",     "General",    "Food waste — bin in general"),
-    "cake":     ("Grey — General Waste",     "General",    "Food waste — bin in general"),
+    # --- General Waste (Cups & Containers) ---
+    "paper cup":          ("General waste",   "General",    "Plastic-coated — not recyclable"),
+    "plastic cup":        ("General waste",   "General",    "Not accepted in recycling bins"),
+    "cup":                ("General waste",   "General",    "Not accepted in recycling bins"),
+    "styrofoam container":("General waste",   "General",    "Not accepted in recycling bins"),
+    "sandwich":           ("General waste",   "General",    "Greasy food waste — not recyclable"),
+    "pizza":              ("General waste",   "General",    "Greasy food waste — not recyclable"),
+
+    # --- Special Collection (Liquid Cartons) ---
+    "milk carton":        ("Special — Green@Community", "Special", "Wash, dry, remove cap; NOT the street bin"),
+    "liquid carton":      ("Special — Green@Community", "Special", "Wash, dry, remove cap; NOT the street bin"),
 }
 
 def map_waste_item(class_name: str) -> tuple:
