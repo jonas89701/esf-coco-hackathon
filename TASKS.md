@@ -28,7 +28,7 @@ bake vocab+weights → detector.py (YOLO-World) → mapping.py (HK rules) → an
 ## Your tasks (Integration Lead)
 
 - [ ] Write `src/detector.py`: load **YOLO-World** once (`@st.cache_resource`), set the core vocabulary, function `predict(image)` returning boxes/names/confidences.
-- [ ] Define the core vocabulary (~12 items): `plastic bottle, aluminium can, glass bottle, banana, apple, orange, paper cup, plastic cup, styrofoam container, milk carton, plastic fork, plastic spoon`.
+- [ ] Define the core vocabulary (~12 items): `plastic bottle, beverage can, glass bottle, banana, apple, orange, paper cup, plastic cup, styrofoam container, milk carton, plastic fork, plastic spoon`.
 - [ ] Bake the vocabulary into the weights **now, while online**: `model.set_classes(VOCAB)` → `model.save("weights/yolov8s-worldv2_core.pt")`. (Offline demo depends on this.)
 - [ ] Write the core of `app/main.py`: photo upload (`st.file_uploader`) + webcam (`st.camera_input`).
 - [ ] Call the mapping + annotation functions and render results (annotated image + a bullet list first).
@@ -57,7 +57,7 @@ bake vocab+weights → detector.py (YOLO-World) → mapping.py (HK rules) → an
 - [ ] Collect 3–5 sample images (photo your own rubbish: plastic bottle, can, banana, paper cup, carton, styrofoam box) → `data/sample_images/`. ✅ You already started — your dataset link in the spec helps.
 - [ ] Fill in the **waste-rule mapping data** (plain Python dictionary — copy from the spec table — HK-fed rules):
   - `plastic bottle → Plastic bottles | Recyclable | "Rinse, remove cap & label"`
-  - `aluminium can → Metals | Recyclable | "Rinse, remove label"`
+  - `beverage can → Metals | Recyclable | "Rinse, remove label"`
   - `glass bottle → Glass | Recyclable | "Rinse, remove cap"`
   - `banana / apple / orange → General waste (food) | General | "Compost if school has food waste"`
   - `paper cup / plastic cup → General waste | General | "Not recyclable"`

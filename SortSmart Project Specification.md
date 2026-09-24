@@ -65,7 +65,7 @@ As a user I want to…
 
 **Model & AI approach:**
 
-* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~12 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *aluminium can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
+* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~12 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *beverage can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
 * **Offline packaging:** bake the vocabulary into the weights (`model.set_classes(...)` → `model.save("yolov8s-worldv2_core.pt")`) **once, while online**, so demo day is fully offline and loads fast.
 * **Vocabulary discipline:** keep the list short and visually distinct (research: long/open class lists sharply hurt zero-shot precision). Validate prompts against real sample photos and keep the winners.
 * **Stretch goal (only if ahead):** fine-tune on a small custom "waste item" detection set (e.g. TACO or re-annotated TrashNet in YOLO format) using the team's YOLO knowledge.
@@ -78,7 +78,7 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 | Expected object | Bin type | Flag | Prep tip |
 | :---- | :---- | :---- | :---- |
 | bottle / plastic bottle | Plastic bottles | Recyclable | "Rinse, remove cap & label" |
-| can / aluminium can | Metals | Recyclable | "Rinse, remove label" |
+| can / beverage can | Metals | Recyclable | "Rinse, remove label" |
 | glass bottle | Glass | Recyclable | "Rinse, remove cap; no broken glass" |
 | banana, apple, orange | General waste (food) | General | "Compost if your school has food waste collection" |
 | paper cup | General waste | General | "Plastic-coated — not recyclable" |
