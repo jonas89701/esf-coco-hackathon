@@ -34,4 +34,4 @@ WASTE_RULES = {
 
 def map_waste_item(class_name: str) -> tuple:
     default_rule = ("Check locally", "Unsure", "Bin in general waste or check the item label")
-    return WASTE_RULES.get(class_name.lower(), default_rule)
+    return WASTE_RULES.get(class_name.strip().lower(), default_rule)
