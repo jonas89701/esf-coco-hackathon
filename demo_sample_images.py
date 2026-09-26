@@ -8,7 +8,7 @@ from src.detector import predict
 from src.mapping import map_waste_item
 
 
-def main() -> None:
+def main():
     for path in sorted(glob.glob("data/sample_images/*.jpg")):
         img = np.array(Image.open(path).convert("RGB"))
         dets = predict(img)
