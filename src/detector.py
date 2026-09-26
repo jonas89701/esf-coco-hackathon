@@ -41,13 +41,16 @@ DEFAULT_CONF = 0.10
 
 @lru_cache(maxsize=1)
 def load_model():
-    weights = BAKED_WEIGHTS if BAKED_WEIGHTS.exists() else BASE_WEIGHTS
-    model = YOLOWorld(str(weights))
+    if BAKED_WEIGHTS.exists():
+        try:
+            return YOLOWorld(str(BAKED_WEIGHTS))
+        except Exception:
+            BAKED_WEIGHTS.unlink(missing_ok=True)
 
-    if not BAKED_WEIGHTS.exists():
-        model.set_classes(DEFAULT_VOCAB)
-        WEIGHTS_DIR.mkdir(parents=True, exist_ok=True)
-        model.save(str(BAKED_WEIGHTS))
+    model = YOLOWorld(str(BASE_WEIGHTS))
+    model.set_classes(DEFAULT_VOCAB)
+    WEIGHTS_DIR.mkdir(parents=True, exist_ok=True)
+    model.save(str(BAKED_WEIGHTS))
 
     return model
 
