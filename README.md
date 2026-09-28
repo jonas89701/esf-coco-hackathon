@@ -4,16 +4,25 @@ Point your camera at a pile of rubbish and AI tells you exactly which bin each i
 
 ## Setup
 
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.14.
+
 ```bash
-uv venv --python 3.14 .venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
+uv sync            # creates .venv, installs deps from pyproject.toml + uv.lock
 ```
+
+The first time the model runs it downloads the base YOLO-World weights and auto-bakes them into `weights/yolov8s-worldv2_core.pt` (a faster-to-load snapshot). That baked file — or the base `.pt` — is gitignored, so it needs to exist on the machine you demo from. Working fully offline just means running the app once with internet, then the baked weights are reused.
 
 ## Run
 
 ```bash
-streamlit run app/main.py
+uv run streamlit run src/sortsmart/main.py   # launch at http://localhost:8501
+```
+
+With the venv activated, plain python works too:
+
+```bash
+source .venv/bin/activate
+python3 -m streamlit run src/sortsmart/main.py
 ```
 
 ## Project structure
@@ -21,17 +30,28 @@ streamlit run app/main.py
 ```
 coco/
 ├── SortSmart Project Specification.md  # this project's spec
-├── requirements.txt                    # dependencies
+├── pyproject.toml                      # uv project config + dependencies
+├── uv.lock                             # locked dependency versions
+├── .python-version                     # pins Python 3.14
 ├── .gitignore
-├── app/
-│   └── main.py                         # Streamlit entry point
-├── src/
+├── src/sortsmart/
+│   ├── main.py                         # Streamlit app
 │   ├── detector.py                     # YOLO inference wrapper
 │   ├── mapping.py                      # COCO class → bin rules
 │   └── annotate.py                     # draw boxes + labels
+├── weights/                            # gitignored: base + baked .pt files
 ├── data/sample_images/                 # pre-baked demo images
 ├── notebooks/
-└── tests/
+└── tests/                              # pytest (uv run pytest)
+```
+
+## Running the demos
+
+```bash
+uv run streamlit run src/sortsmart/main.py    # full app
+uv run python demo_annotate.py              # detect + annotate one sample image
+uv run python demo_sample_images.py         # batch-predict all sample images
+uv run pytest                               # unit tests (no model required)
 ```
 
 ## AI Disclosure

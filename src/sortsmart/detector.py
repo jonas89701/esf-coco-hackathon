@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 from ultralytics import YOLOWorld
 
-WEIGHTS_DIR = Path(__file__).resolve().parent.parent / "weights"
+WEIGHTS_DIR = Path(__file__).resolve().parent.parent.parent / "weights"
 BASE_WEIGHTS = WEIGHTS_DIR / "yolov8s-worldv2.pt"
 BAKED_WEIGHTS = WEIGHTS_DIR / "yolov8s-worldv2_core.pt"
 
@@ -59,6 +59,7 @@ def predict(image, conf=DEFAULT_CONF):
     model = load_model()
     if isinstance(image, np.ndarray):
         image = image[:, :, ::-1]
+
     results = model.predict(image, conf=conf, verbose=False)
     detections = []
 

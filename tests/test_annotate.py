@@ -2,7 +2,7 @@
 
 from PIL import Image
 
-from src.annotate import annotateImage
+from sortsmart.annotate import annotateImage
 
 
 def makeImg():

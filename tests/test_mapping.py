@@ -1,6 +1,6 @@
 # tests for mapping.py
 
-from src.mapping import map_waste_item
+from sortsmart.mapping import map_waste_item
 
 
 def testPlasticBottle():
