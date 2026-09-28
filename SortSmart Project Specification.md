@@ -8,7 +8,7 @@ Point your camera at a pile of rubbish, and AI tells you exactly which bin each 
 Most people want to recycle, but they don't know what HK's bins actually accept, and contaminated items (greasy pizza boxes, unrinsed bottles, plastic cups) get rejected from the recycling chain. Confusion = contamination = low recycling rates.
 
 **Objective:**
-Build a working Streamlit web app where a user takes a photo (or live camera) of one or more items and instantly receives, per detected item: the correct bin type, a confidence score, and a "how to prep" tip. The app must be dependable enough to demo live **offline** and simple enough that it runs from a fresh clone.
+Build a working Streamlit web app where a user takes a photo (or live camera) of one or more items and instantly receives, per detected item: the correct bin type and a "how to prep" tip **with the confidence percentage folded into the recommendation** — e.g. **"Recycle this as paper! (10% confident)"** — so the advice itself says how sure the detection is. The app must be dependable enough to demo live **offline** and simple enough that it runs from a fresh clone.
 
 **Alignment with theme:**
 UN SDG 12 — Responsible Consumption and Production (reducing contamination and improving recycling rates at the source). Secondary alignment: SDG 4 (Education — teaching correct recycling behaviour).
@@ -50,7 +50,8 @@ As a user I want to…
 * upload a photo **or** use my webcam so I can check a real-life pile of rubbish.
 * see **every item in the photo detected and labelled**, not just one.
 * know the **bin type for each item** (Paper / Plastic bottles / Metals / Glass / General waste / Special) with a **confidence score**.
-* get a **1-line prep tip** for each item (e.g. "rinse the bottle, remove the cap").
+* get a **1-line prep tip** for each item (e.g. "rinse the bottle, remove the cap") **with the detection confidence inlined as a percentage** — e.g. "Recycle this as paper! (10% confident)".
+* have the recommendation **wording account for the percentage**: high scores read as a direct instruction ("Recycle this as paper! (82% confident)"), low scores hedge so I know to double-check ("Looks like paper — 10%, check the label first"). Exact cutoffs get tuned alongside the confidence threshold.
 * see a running **"items sorted correctly" counter** during the session to reinforce learning.
 
 ---
@@ -61,7 +62,7 @@ As a user I want to…
 2. Detect: run **YOLO-World** (`ultralytics.YOLOWorld`) with our core vocabulary pre-set; keep detections above a tuned confidence threshold (zero-shot scores run low — start at ~0.10, not 0.40).
 3. Draw: render boxes + class labels on the image (results `.plot()` or OpenCV).
 4. Map: each detected class name is looked up in a **waste-rule table** (name → bin type + prep tip + flag). Anything unmapped or below threshold → "Unsure".
-5. Display: annotated image + one card per detected item, plus the session counter.
+5. Display: annotated image + one card per detected item — bin badge, prep tip, and the confidence % inlined in the recommendation (e.g. "Recycle this as paper! (10% confident)"), with wording scaled to the score; plus the session counter.
 
 **Model & AI approach:**
 
@@ -85,6 +86,8 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 | plastic cup, styrofoam container | General waste | General | "Not accepted in recycling bins" |
 | milk carton / liquid carton | Special — Green@Community | Special | "Wash, dry, remove cap; NOT the street bin" |
 | *(anything not mapped / below threshold)* | Check locally | Unsure | "Bin in general waste or check the item label" |
+
+*Note: the rule table stays percentage-free — the confidence % gets appended to the tip at display time (tip + " (12% confident)"), and how the wording scales with the score is decided in the display layer.*
 
 ---
 
