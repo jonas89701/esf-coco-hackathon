@@ -1,5 +1,5 @@
 [project]
-name = "SortSmart"
+name = "sortsmart"
 version = "0.1.0"
 description = "Sort recycling products."
 readme = "README.md"
@@ -13,10 +13,12 @@ dependencies = [
     "opencv-python>=4.10",
     "pi-heif>=1.4.0",
     "pillow>=10.0",
-    "pytest>=8.0",
     "streamlit>=1.40",
     "ultralytics>=8.3",
 ]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
 
 [build-system]
 requires = ["uv_build>=0.12.7,<0.13.0"]

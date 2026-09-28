@@ -1,10 +1,11 @@
-from pathlib import Path
-import streamlit as st
-from PIL import Image
 import io
+from pathlib import Path
 
-from sortsmart.annotate import annotateImage
+from PIL import Image
+import streamlit as st
+
 from sortsmart import detector, mapping
+from sortsmart.annotate import annotateImage
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
 
