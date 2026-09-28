@@ -3,8 +3,8 @@ from PIL import Image
 import numpy as np
 import cv2
 
-from src import detector
-from src.annotate import annotateImage
+from sortsmart import detector
+from sortsmart.annotate import annotateImage
 
 SAMPLES = Path("data/sample_images")
 

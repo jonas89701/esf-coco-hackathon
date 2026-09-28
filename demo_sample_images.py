@@ -4,8 +4,8 @@ import os
 import numpy as np
 from PIL import Image
 
-from src.detector import predict
-from src.mapping import map_waste_item
+from sortsmart.detector import predict
+from sortsmart.mapping import map_waste_item
 
 
 def main():
