@@ -10,7 +10,12 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.14.
 uv sync            # creates .venv, installs deps from pyproject.toml + uv.lock
 ```
 
-The first time the model runs it downloads the base YOLO-World weights and auto-bakes them into `weights/yolov8s-worldv2_core.pt` (a faster-to-load snapshot). That baked file — or the base `.pt` — is gitignored, so it needs to exist on the machine you demo from. Working fully offline just means running the app once with internet, then the baked weights are reused.
+The first time the app runs it downloads the base YOLO-World weights (~25 MB)
+and auto-bakes them into `weights/yolov8s-worldv2_core.pt` (a faster-to-load
+offline snapshot). The baked file — or the base `.pt` — is gitignored, so a
+fresh clone triggers this download+bake automatically on first run. To work
+fully offline later, just run the app once while online so the baked weights
+are cached.
 
 ## Run
 
@@ -53,6 +58,20 @@ uv run python demo_annotate.py              # detect + annotate one sample image
 uv run python demo_sample_images.py         # batch-predict all sample images
 uv run pytest                               # unit tests (no model required)
 ```
+
+## Libraries & dependencies
+
+Dependencies are managed by uv (`pyproject.toml` + `uv.lock`).
+
+| Library | Purpose | Source |
+|---|---|---|
+| Ultralytics YOLO-World | Open-vocabulary object detection (zero-shot, no training) | https://github.com/ultralytics/ultralytics |
+| CLIP | Text-vocabulary embeddings used by YOLO-World | https://github.com/ultralytics/CLIP |
+| Streamlit | Web UI | https://github.com/streamlit/streamlit |
+| Pillow | Image decoding + annotation drawing | https://python-pillow.org/ |
+| OpenCV | Image handling in demo scripts | https://opencv.org/ |
+| NumPy | Array/numpy handling for detections | https://numpy.org/ |
+| pi-heif | HEIC photo support | https://github.com/strukturag/libheif |
 
 ## AI Disclosure
 

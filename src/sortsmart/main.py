@@ -217,14 +217,19 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# weights/ is gitignored, so a fresh clone has no .pt file — fail loudly, not silently
+# weights/ is gitignored, so a fresh clone has no .pt file — bake it on first
+# run (downloads the base model, then saves the sliced core for offline use)
 if not (WEIGHTS_DIR.is_dir() and any(WEIGHTS_DIR.glob("*.pt"))):
-    st.error(
-        "**Model weights not found.** The `weights/` folder is gitignored, so a "
-        "fresh clone won't have them. See the README for the download step, then "
-        "restart the app."
-    )
-    st.stop()
+    with st.spinner("Baking model weights for the first time…"):
+        try:
+            detector.load_model()
+        except Exception as e:
+            st.error(
+                "**Couldn't download the model weights.** The `weights/` folder "
+                "is gitignored, so a fresh clone has nothing until the model is "
+                f"baked once. Error: `{e}`"
+            )
+            st.stop()
 
 colUpload, colCamera = st.columns(2, gap="medium")
 with colUpload:

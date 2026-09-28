@@ -105,16 +105,10 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 coco/
 ├── SortSmart Project Specification.md   # this document
 ├── README.md                            # setup guide + AI disclosure + citations
-├── requirements.txt                     # pinned dependency list
+├── pyproject.toml                       # uv project config + pinned dependency list
 ├── .gitignore
 ├── weights/                             # cached YOLO-World weights w/ baked vocabulary
-├── app/
-│   └── main.py                          # Streamlit entry point  (streamlit run app/main.py)
-├── src/
-│   ├── __init__.py
-│   ├── detector.py                      # YOLO-World wrapper: load model, set vocab, predict
-│   ├── mapping.py                       # item name → bin type / flag / prep tip rules
-│   └── annotate.py                      # draw bounding boxes + labels (OpenCV/Pillow)
+├── src/sortsmart/                       # package (main.py, detector.py, mapping.py, annotate.py)
 ├── data/
 │   └── sample_images/                   # pre-baked demo images (demo can never fail)
 ├── notebooks/                           # exploration / troubleshooting notes
