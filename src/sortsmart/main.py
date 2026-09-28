@@ -151,6 +151,11 @@ def cachedPredict(imgBytes: bytes):
     return detector.predict(img, conf=0.0)
 
 
+# how bold the recommendation reads, tune alongside the confidence threshold
+STRONG_CONF = 50
+WEAK_CONF = 25
+
+
 def renderCard(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
@@ -159,6 +164,22 @@ def renderCard(n, det, info):
     confPct = max(0, min(100, int(det.get("conf", 0) * 100)))
     icon = classIcon(det["class"])
     delay = min(n - 1, 8) * 0.05
+
+    # wording scales with how sure we are, the % gets folded into the line
+    if flag == "Recyclable":
+        verb = f"Recycle this as {binType.lower()}"
+    elif flag == "General":
+        verb = f"Bin this in {binType.lower()}"
+    elif flag == "Special":
+        verb = f"Take this to {binType}"
+    else:
+        verb = "Check local rules"
+    if confPct >= STRONG_CONF:
+        rec = f"<b>{verb}!</b> ({confPct}% confident)"
+    elif confPct >= WEAK_CONF:
+        rec = f"{verb}. ({confPct}% confident)"
+    else:
+        rec = f"Looks like {det['class'].lower()} — {confPct}%, check the label first"
 
     st.markdown(
         f"""
@@ -172,7 +193,8 @@ def renderCard(n, det, info):
         </div>
         <div class="progress"><div class="progressFill" style="width:{confPct}%;"></div></div>
         <div class="progressLabel"><span>confidence</span><span>{confPct}%</span></div>
-        <div class="tip">💡 {tip}</div>
+        <div class="tip">💡 {rec}</div>
+        <div class="tip" style="margin-top:0.3rem;">🔧 {tip}</div>
     </div>
     """,
         unsafe_allow_html=True,
