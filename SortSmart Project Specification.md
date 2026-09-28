@@ -51,7 +51,7 @@ As a user I want to…
 * see **every item in the photo detected and labelled**, not just one.
 * know the **bin type for each item** (Paper / Plastic bottles / Metals / Glass / General waste / Special) with a **confidence score**.
 * get a **1-line prep tip** for each item (e.g. "rinse the bottle, remove the cap") **with the detection confidence inlined as a percentage** — e.g. "Recycle this as paper! (10% confident)".
-* have the recommendation **wording account for the percentage**: high scores read as a direct instruction ("Recycle this as paper! (82% confident)"), low scores hedge so I know to double-check ("Looks like paper — 10%, check the label first"). Exact cutoffs get tuned alongside the confidence threshold.
+* have the recommendation **wording account for the percentage**: high scores read as a direct instruction ("Recycle this as paper! (82% confident)"), middle scores stay neutral ("Recycle this as paper. (43% confident)"), low scores hedge so I know to double-check ("Looks like paper — 10%, check the label first"). Exact cutoffs get tuned alongside the confidence threshold — zero-shot scores run low and stragglers sit just above the floor, so one flat sentence would read the same for 12% junk and a solid 85%.
 * see a **final combined confidence for each bin** — when several items land in the same bin (newspaper + paper → Paper), their percentages combine into one final number for that bin; items heading elsewhere (cup → General waste) keep their own.
 * see a running **"items sorted correctly" counter** during the session to reinforce learning.
 
