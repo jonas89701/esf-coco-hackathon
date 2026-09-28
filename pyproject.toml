@@ -1,0 +1,26 @@
+[project]
+name = "SortSmart"
+version = "0.1.0"
+description = "Sort recycling products."
+readme = "README.md"
+authors = [
+    { name = "jonas89701" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "clip",
+    "numpy>=1.26",
+    "opencv-python>=4.10",
+    "pi-heif>=1.4.0",
+    "pillow>=10.0",
+    "pytest>=8.0",
+    "streamlit>=1.40",
+    "ultralytics>=8.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+clip = { git = "https://github.com/ultralytics/CLIP.git" }

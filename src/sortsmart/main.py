@@ -1,22 +1,18 @@
-import io
-import sys
 from pathlib import Path
-
-# streamlit only puts app/ on the path, add the repo root so `src` resolves
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
 import streamlit as st
 from PIL import Image
-from src import detector, mapping
-from src.annotate import annotateImage
+import io
+
+from sortsmart.annotate import annotateImage
+from sortsmart import detector, mapping
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
 
 # weights are gitignored, so a fresh clone won't have them
-WEIGHTS_DIR = Path(__file__).resolve().parent.parent / "weights"
+WEIGHTS_DIR = Path(__file__).resolve().parent.parent.parent / "weights"
 
-# ---------------- Custom CSS ----------------
-st.markdown("""
+st.markdown(
+    """
 <style>
 .stApp { background: linear-gradient(180deg, #f6faf7 0%, #eef5ef 100%); }
 [data-testid="stSidebar"] { background: #fbfdfb; border-right: 1px solid #e6efe8; }
@@ -103,39 +99,58 @@ label[data-testid="stWidgetLabel"] p { font-weight: 600; color: #2a3a30; }
     label[data-testid="stWidgetLabel"] p { color: #c6d4ca; }
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-# ---------------- Data maps ----------------
 FLAGS = {
     "Recyclable": {"icon": "♻️", "bg": "#0b7a3b"},
-    "General":    {"icon": "🗑️", "bg": "#3f4a52"},
-    "Special":    {"icon": "⚠️", "bg": "#c98a00"},
-    "Unsure":     {"icon": "❓", "bg": "#8a1c1c"},
+    "General": {"icon": "🗑️", "bg": "#3f4a52"},
+    "Special": {"icon": "⚠️", "bg": "#c98a00"},
+    "Unsure": {"icon": "❓", "bg": "#8a1c1c"},
 }
 
+# one icon per class in detector.DEFAULT_VOCAB
 CLASS_ICONS = {
-    "bottle": "🍾", "cup": "🥤", "wine glass": "🍷",
-    "fork": "🍴", "knife": "🔪", "spoon": "🥄", "bowl": "🥣",
-    "banana": "🍌", "apple": "🍎", "orange": "🍊",
-    "sandwich": "🥪", "pizza": "🍕", "carrot": "🥕", "broccoli": "🥦",
-    "beverage can": "🥫", "book": "📖", "paper": "📄",
-    "cell phone": "📱", "keyboard": "⌨️", "mouse": "🖱️",
-    "remote": "📺", "scissors": "✂️",
-    "teddy bear": "🧸", "handbag": "👜", "backpack": "🎒",
-    "umbrella": "☂️", "vase": "🏺", "clock": "🕐",
+    "plastic bottle": "🧴",
+    "bottle": "🍾",
+    "water bottle": "💧",
+    "beverage can": "🥫",
+    "can": "🥫",
+    "tin can": "🥫",
+    "glass bottle": "🍶",
+    "glass jar": "🫙",
+    "cardboard box": "📦",
+    "newspaper": "📰",
+    "banana": "🍌",
+    "apple": "🍎",
+    "orange": "🍊",
+    "carrot": "🥕",
+    "broccoli": "🥦",
+    "paper cup": "🥤",
+    "plastic cup": "🥤",
+    "cup": "☕",
+    "styrofoam container": "🥡",
+    "sandwich": "🥪",
+    "pizza": "🍕",
+    "milk carton": "🥛",
+    "liquid carton": "🧃",
+    "plastic fork": "🍴",
+    "plastic spoon": "🥄",
 }
+
 
 def classIcon(label):
     return CLASS_ICONS.get(label.lower().strip(), "📦")
 
-# ---------------- Caching ----------------
+
 # inference is cached on image bytes so slider drags don't re-run the model
 @st.cache_data(show_spinner=False, max_entries=8)
 def cachedPredict(imgBytes: bytes):
     img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
     return detector.predict(img, conf=0.0)
 
-# ---------------- Renderers ----------------
+
 def renderCard(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
@@ -145,7 +160,8 @@ def renderCard(n, det, info):
     icon = classIcon(det["class"])
     delay = min(n - 1, 8) * 0.05
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div class="itemCard" style="border-left-color: {f['bg']}; animation-delay: {delay:.2f}s;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
             <div class="name"><span class="classIcon">{icon}</span>{det['class'].title()}</div>
@@ -158,7 +174,9 @@ def renderCard(n, det, info):
         <div class="progressLabel"><span>confidence</span><span>{confPct}%</span></div>
         <div class="tip">💡 {tip}</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 def statTile(num, label):
@@ -168,6 +186,7 @@ def statTile(num, label):
         <div class="label">{label}</div>
     </div>
     """
+
 
 # ---------------- Sidebar ----------------
 with st.sidebar:
@@ -182,20 +201,23 @@ with st.sidebar:
     st.divider()
     threshold = st.slider(
         "Confidence threshold",
-        min_value=0.05, max_value=0.5,
-        value=float(detector.DEFAULT_CONF), step=0.05,
+        min_value=0.05,
+        max_value=0.5,
+        value=float(detector.DEFAULT_CONF),
+        step=0.05,
         help="Detections scoring below this are hidden.",
     )
 
-# ---------------- Hero ----------------
-st.markdown("""
+st.markdown(
+    """
 <div class="hero">
     <h1>♻️ SortSmart</h1>
     <p>Point at your rubbish — we'll tell you which bin each item goes in.</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-# ---------------- Weights check ----------------
 # weights/ is gitignored, so a fresh clone has no .pt file — fail loudly, not silently
 if not (WEIGHTS_DIR.is_dir() and any(WEIGHTS_DIR.glob("*.pt"))):
     st.error(
@@ -205,7 +227,6 @@ if not (WEIGHTS_DIR.is_dir() and any(WEIGHTS_DIR.glob("*.pt"))):
     )
     st.stop()
 
-# ---------------- Inputs ----------------
 colUpload, colCamera = st.columns(2, gap="medium")
 with colUpload:
     f = st.file_uploader("📁 Upload a photo", type=["jpg", "jpeg", "png"])
@@ -219,24 +240,25 @@ elif f is not None:
     imgBytes = f.getvalue()
 
 if imgBytes is None:
-    st.markdown("""
+    st.markdown(
+        """
     <div class="emptyState" style="margin-top:1rem;">
         <span class="emoji">📸</span>
         <h4>Ready when you are</h4>
         <p>Upload a photo or use your camera to see which bin your waste belongs in.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
     st.stop()
 
 img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
 
-# ---------------- Pipeline ----------------
 with st.spinner("Analysing…"):
     allDets = cachedPredict(imgBytes)
     detections = [d for d in allDets if d.get("conf", 0) >= threshold]
     annotated = annotateImage(img, detections)
 
-# ---------------- Layout ----------------
 imgCol, listCol = st.columns([1, 1], gap="large")
 
 with imgCol:
@@ -246,8 +268,8 @@ with listCol:
     imgKey = hash(imgBytes)
     if st.session_state.get("lastImgKey") != imgKey:
         st.session_state["lastImgKey"] = imgKey
-        st.session_state["itemsSorted"] = (
-            st.session_state.get("itemsSorted", 0) + len(detections)
+        st.session_state["itemsSorted"] = st.session_state.get("itemsSorted", 0) + len(
+            detections
         )
 
     counts = {k: 0 for k in FLAGS}
@@ -256,15 +278,23 @@ with listCol:
         counts[flag] = counts.get(flag, 0) + 1
 
     t1, t2, t3 = st.columns(3, gap="small")
-    t1.markdown(statTile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True)
-    t2.markdown(statTile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True)
-    t3.markdown(statTile(counts.get("General", 0) + counts.get("Unsure", 0), "General"), unsafe_allow_html=True)
+    t1.markdown(
+        statTile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True
+    )
+    t2.markdown(
+        statTile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True
+    )
+    t3.markdown(
+        statTile(counts.get("General", 0) + counts.get("Unsure", 0), "General"),
+        unsafe_allow_html=True,
+    )
 
     st.write("")
     st.markdown(f"#### Detected items ({len(detections)})")
 
     if not detections:
-        st.markdown("""
+        st.markdown(
+            """
         <div class="emptyState">
             <span class="emoji">🔍</span>
             <h4>No items detected</h4>
@@ -276,15 +306,17 @@ with listCol:
                 <li>A lower threshold in the sidebar</li>
             </ul>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
     else:
         for n, det in enumerate(detections, start=1):
             binType, flag, tip = mapping.map_waste_item(det["class"])
             renderCard(n, det, {"bin_type": binType, "flag": flag, "tip": tip})
 
-# ---------------- Fixed bottom action bar ----------------
 sortedCount = st.session_state.get("itemsSorted", 0)
-st.markdown(f"""
+st.markdown(
+    f"""
 <div class="bottomBar">
     <span class="bbLabel">♻️ SortSmart</span>
     <span class="bbRight">
@@ -292,4 +324,6 @@ st.markdown(f"""
         <span class="bbUnit">items sorted this session</span>
     </span>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
