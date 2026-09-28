@@ -188,12 +188,12 @@ def renderCard(n, det, info):
             <div class="name"><span class="classIcon">{icon}</span>{det['class'].title()}</div>
             <div class="pill pillBin">{binType}</div>
         </div>
+        <div class="tip">💡 {rec}</div>
         <div style="margin-top:0.55rem; display:flex; gap:0.6rem; align-items:center;">
             <span class="pill pillFlag" style="background:{f['bg']};">{f['icon']} {flag}</span>
         </div>
         <div class="progress"><div class="progressFill" style="width:{confPct}%;"></div></div>
         <div class="progressLabel"><span>confidence</span><span>{confPct}%</span></div>
-        <div class="tip">💡 {rec}</div>
         <div class="tip" style="margin-top:0.3rem;">🔧 {tip}</div>
     </div>
     """,
