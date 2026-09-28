@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 
 from sortsmart import detector
-from sortsmart.annotate import annotate_image
+from sortsmart.annotate import annotateImage
 
 SAMPLES = Path("data/sample_images")
 
@@ -14,7 +14,7 @@ def main():
     img_path = SAMPLES / "sprite_can.jpg"
     img = Image.open(img_path)
     results = detector.predict(img, conf=detector.DEFAULT_CONF)
-    annotated = annotate_image(img, results)
+    annotated = annotateImage(img, results)
 
     print(f"image: {img_path.name} | detections: {len(results)}")
     for det in results:

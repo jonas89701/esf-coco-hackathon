@@ -5,7 +5,7 @@ from PIL import Image
 import streamlit as st
 
 from sortsmart import detector, mapping
-from sortsmart.annotate import annotate_image
+from sortsmart.annotate import annotateImage
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
 
@@ -141,24 +141,24 @@ CLASS_ICONS = {
 }
 
 
-def class_icon(label):
+def classIcon(label):
     return CLASS_ICONS.get(label.lower().strip(), "📦")
 
 
 # inference is cached on image bytes so slider drags don't re-run the model
 @st.cache_data(show_spinner=False, max_entries=8)
-def cached_predict(img_bytes: bytes):
-    img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+def cachedPredict(imgBytes: bytes):
+    img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
     return detector.predict(img, conf=0.0)
 
 
-def render_card(n, det, info):
+def renderCard(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
-    bin_type = info.get("bin_type", "Unsure")
+    binType = info.get("bin_type", "Unsure")
     tip = info.get("tip", "Check local rules.")
-    conf_pct = max(0, min(100, int(det.get("conf", 0) * 100)))
-    icon = class_icon(det["class"])
+    confPct = max(0, min(100, int(det.get("conf", 0) * 100)))
+    icon = classIcon(det["class"])
     delay = min(n - 1, 8) * 0.05
 
     st.markdown(
@@ -166,13 +166,13 @@ def render_card(n, det, info):
     <div class="itemCard" style="border-left-color: {f['bg']}; animation-delay: {delay:.2f}s;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
             <div class="name"><span class="classIcon">{icon}</span>{det['class'].title()}</div>
-            <div class="pill pillBin">{bin_type}</div>
+            <div class="pill pillBin">{binType}</div>
         </div>
         <div style="margin-top:0.55rem; display:flex; gap:0.6rem; align-items:center;">
             <span class="pill pillFlag" style="background:{f['bg']};">{f['icon']} {flag}</span>
         </div>
-        <div class="progress"><div class="progressFill" style="width:{conf_pct}%;"></div></div>
-        <div class="progressLabel"><span>confidence</span><span>{conf_pct}%</span></div>
+        <div class="progress"><div class="progressFill" style="width:{confPct}%;"></div></div>
+        <div class="progressLabel"><span>confidence</span><span>{confPct}%</span></div>
         <div class="tip">💡 {tip}</div>
     </div>
     """,
@@ -180,7 +180,7 @@ def render_card(n, det, info):
     )
 
 
-def stat_tile(num, label):
+def statTile(num, label):
     return f"""
     <div class="statTile">
         <div class="num">{num}</div>
@@ -232,19 +232,19 @@ if not (WEIGHTS_DIR.is_dir() and any(WEIGHTS_DIR.glob("*.pt"))):
             )
             st.stop()
 
-col_upload, col_camera = st.columns(2, gap="medium")
-with col_upload:
+colUpload, colCamera = st.columns(2, gap="medium")
+with colUpload:
     f = st.file_uploader("📁 Upload a photo", type=["jpg", "jpeg", "png"])
-with col_camera:
+with colCamera:
     shot = st.camera_input("📷 Or take a photo")
 
-img_bytes = None
+imgBytes = None
 if shot is not None:
-    img_bytes = shot.getvalue()
+    imgBytes = shot.getvalue()
 elif f is not None:
-    img_bytes = f.getvalue()
+    imgBytes = f.getvalue()
 
-if img_bytes is None:
+if imgBytes is None:
     st.markdown(
         """
     <div class="emptyState" style="margin-top:1rem;">
@@ -257,22 +257,22 @@ if img_bytes is None:
     )
     st.stop()
 
-img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
 
 with st.spinner("Analysing…"):
-    all_dets = cached_predict(img_bytes)
-    detections = [d for d in all_dets if d.get("conf", 0) >= threshold]
-    annotated = annotate_image(img, detections)
+    allDets = cachedPredict(imgBytes)
+    detections = [d for d in allDets if d.get("conf", 0) >= threshold]
+    annotated = annotateImage(img, detections)
 
-img_col, list_col = st.columns([1, 1], gap="large")
+imgCol, listCol = st.columns([1, 1], gap="large")
 
-with img_col:
+with imgCol:
     st.image(annotated, caption="Your photo", width="stretch")
 
-with list_col:
-    img_key = hash(img_bytes)
-    if st.session_state.get("lastImgKey") != img_key:
-        st.session_state["lastImgKey"] = img_key
+with listCol:
+    imgKey = hash(imgBytes)
+    if st.session_state.get("lastImgKey") != imgKey:
+        st.session_state["lastImgKey"] = imgKey
         st.session_state["itemsSorted"] = st.session_state.get("itemsSorted", 0) + len(
             detections
         )
@@ -284,13 +284,13 @@ with list_col:
 
     t1, t2, t3 = st.columns(3, gap="small")
     t1.markdown(
-        stat_tile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True
+        statTile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True
     )
     t2.markdown(
-        stat_tile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True
+        statTile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True
     )
     t3.markdown(
-        stat_tile(counts.get("General", 0) + counts.get("Unsure", 0), "General"),
+        statTile(counts.get("General", 0) + counts.get("Unsure", 0), "General"),
         unsafe_allow_html=True,
     )
 
@@ -316,16 +316,16 @@ with list_col:
         )
     else:
         for n, det in enumerate(detections, start=1):
-            bin_type, flag, tip = mapping.map_waste_item(det["class"])
-            render_card(n, det, {"bin_type": bin_type, "flag": flag, "tip": tip})
+            binType, flag, tip = mapping.map_waste_item(det["class"])
+            renderCard(n, det, {"bin_type": binType, "flag": flag, "tip": tip})
 
-sorted_count = st.session_state.get("itemsSorted", 0)
+sortedCount = st.session_state.get("itemsSorted", 0)
 st.markdown(
     f"""
 <div class="bottomBar">
     <span class="bbLabel">♻️ SortSmart</span>
     <span class="bbRight">
-        <span class="bbNum">{sorted_count}</span>
+        <span class="bbNum">{sortedCount}</span>
         <span class="bbUnit">items sorted this session</span>
     </span>
 </div>

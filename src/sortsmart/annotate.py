@@ -1,7 +1,7 @@
 from PIL import ImageDraw, ImageFont
 
 
-def annotate_image(img, detections):
+def annotateImage(img, detections):
     # work on a copy so the original photo stays clean
     img_copy = img.convert("RGB").copy()
     draw = ImageDraw.Draw(img_copy)

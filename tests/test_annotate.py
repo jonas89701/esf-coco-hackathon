@@ -2,43 +2,43 @@
 
 from PIL import Image
 
-from sortsmart.annotate import annotate_image
+from sortsmart.annotate import annotateImage
 
 
-def make_img():
+def makeImg():
     return Image.new("RGB", (640, 480), "white")
 
 
-def test_returns_image():
-    out = annotate_image(make_img(), [])
+def testReturnsImage():
+    out = annotateImage(makeImg(), [])
     assert isinstance(out, Image.Image)
 
 
-def test_original_not_changed():
-    img = make_img()
-    annotate_image(img, [{"box": [50, 60, 200, 300], "class": "bottle", "conf": 0.87}])
+def testOriginalNotChanged():
+    img = makeImg()
+    annotateImage(img, [{"box": [50, 60, 200, 300], "class": "bottle", "conf": 0.87}])
     # box starts at (50, 60), original should still be plain white there
     assert img.getpixel((50, 60)) == (255, 255, 255)
 
 
-def test_box_drawn():
-    out = annotate_image(make_img(), [{"box": [50, 60, 200, 300], "class": "bottle", "conf": 0.87}])
+def testBoxDrawn():
+    out = annotateImage(makeImg(), [{"box": [50, 60, 200, 300], "class": "bottle", "conf": 0.87}])
     # (50, 60) is the top-left of the box, should be the green outline now
     assert out.getpixel((50, 60)) != (255, 255, 255)
 
 
-def test_empty_detections():
-    out = annotate_image(make_img(), [])
+def testEmptyDetections():
+    out = annotateImage(makeImg(), [])
     assert isinstance(out, Image.Image)
 
 
-def test_no_box_skipped():
+def testNoBoxSkipped():
     # missing box / empty dict / box=None should all just get skipped
-    out = annotate_image(make_img(), [{"class": "banana"}, {}, {"box": None}])
+    out = annotateImage(makeImg(), [{"class": "banana"}, {}, {"box": None}])
     assert isinstance(out, Image.Image)
 
 
-def test_no_conf_ok():
+def testNoConfOk():
     # conf isnt always there, label should just be the class name
-    out = annotate_image(make_img(), [{"box": [10, 10, 100, 100], "class": "cup"}])
+    out = annotateImage(makeImg(), [{"box": [10, 10, 100, 100], "class": "cup"}])
     assert isinstance(out, Image.Image)
