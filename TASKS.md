@@ -46,7 +46,7 @@ bake vocab+weights → detector.py (YOLO-World) → mapping.py (HK rules) → an
 
 ## Julian's tasks (UI & Git keeper)
 
-- [ ] Verify a fresh setup works: clone → `uv venv --python 3.14 .venv` → `uv pip install -r requirements.txt` → app runs. Record steps for README.
+- [ ] Verify a fresh setup works: clone → `uv sync` → `uv run streamlit run src/sortsmart/main.py` auto-bakes weights → app runs. Record steps for README.
 - [ ] Write the UI layout in `app/main.py` around the pieces you/Ethan provide: title, sidebar (model info/threshold), main area (image + per-item cards), counter.
 - [ ] Make the per-item "cards" look clean: bin badge, flag (Recyclable / General / Special / Unsure), tip.
 - [ ] Handle edge cases: no items detected → friendly "try again" message.
