@@ -188,7 +188,6 @@ def statTile(num, label):
     """
 
 
-# ---------------- Sidebar ----------------
 with st.sidebar:
     st.markdown("### ♻️ SortSmart")
     st.caption("AI recycling assistant")
