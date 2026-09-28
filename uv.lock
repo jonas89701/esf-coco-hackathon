@@ -1442,9 +1442,13 @@ dependencies = [
     { name = "opencv-python" },
     { name = "pi-heif" },
     { name = "pillow" },
-    { name = "pytest" },
     { name = "streamlit" },
     { name = "ultralytics" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -1454,10 +1458,12 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.10" },
     { name = "pi-heif", specifier = ">=1.4.0" },
     { name = "pillow", specifier = ">=10.0" },
-    { name = "pytest", specifier = ">=8.0" },
     { name = "streamlit", specifier = ">=1.40" },
     { name = "ultralytics", specifier = ">=8.3" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0" }]
 
 [[package]]
 name = "starlette"

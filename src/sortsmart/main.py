@@ -1,10 +1,11 @@
-from pathlib import Path
-import streamlit as st
-from PIL import Image
 import io
+from pathlib import Path
 
-from sortsmart.annotate import annotateImage
+from PIL import Image
+import streamlit as st
+
 from sortsmart import detector, mapping
+from sortsmart.annotate import annotate_image
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
 
@@ -140,24 +141,24 @@ CLASS_ICONS = {
 }
 
 
-def classIcon(label):
+def class_icon(label):
     return CLASS_ICONS.get(label.lower().strip(), "📦")
 
 
 # inference is cached on image bytes so slider drags don't re-run the model
 @st.cache_data(show_spinner=False, max_entries=8)
-def cachedPredict(imgBytes: bytes):
-    img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
+def cached_predict(img_bytes: bytes):
+    img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
     return detector.predict(img, conf=0.0)
 
 
-def renderCard(n, det, info):
+def render_card(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
-    binType = info.get("bin_type", "Unsure")
+    bin_type = info.get("bin_type", "Unsure")
     tip = info.get("tip", "Check local rules.")
-    confPct = max(0, min(100, int(det.get("conf", 0) * 100)))
-    icon = classIcon(det["class"])
+    conf_pct = max(0, min(100, int(det.get("conf", 0) * 100)))
+    icon = class_icon(det["class"])
     delay = min(n - 1, 8) * 0.05
 
     st.markdown(
@@ -165,13 +166,13 @@ def renderCard(n, det, info):
     <div class="itemCard" style="border-left-color: {f['bg']}; animation-delay: {delay:.2f}s;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
             <div class="name"><span class="classIcon">{icon}</span>{det['class'].title()}</div>
-            <div class="pill pillBin">{binType}</div>
+            <div class="pill pillBin">{bin_type}</div>
         </div>
         <div style="margin-top:0.55rem; display:flex; gap:0.6rem; align-items:center;">
             <span class="pill pillFlag" style="background:{f['bg']};">{f['icon']} {flag}</span>
         </div>
-        <div class="progress"><div class="progressFill" style="width:{confPct}%;"></div></div>
-        <div class="progressLabel"><span>confidence</span><span>{confPct}%</span></div>
+        <div class="progress"><div class="progressFill" style="width:{conf_pct}%;"></div></div>
+        <div class="progressLabel"><span>confidence</span><span>{conf_pct}%</span></div>
         <div class="tip">💡 {tip}</div>
     </div>
     """,
@@ -179,7 +180,7 @@ def renderCard(n, det, info):
     )
 
 
-def statTile(num, label):
+def stat_tile(num, label):
     return f"""
     <div class="statTile">
         <div class="num">{num}</div>
@@ -231,19 +232,19 @@ if not (WEIGHTS_DIR.is_dir() and any(WEIGHTS_DIR.glob("*.pt"))):
             )
             st.stop()
 
-colUpload, colCamera = st.columns(2, gap="medium")
-with colUpload:
+col_upload, col_camera = st.columns(2, gap="medium")
+with col_upload:
     f = st.file_uploader("📁 Upload a photo", type=["jpg", "jpeg", "png"])
-with colCamera:
+with col_camera:
     shot = st.camera_input("📷 Or take a photo")
 
-imgBytes = None
+img_bytes = None
 if shot is not None:
-    imgBytes = shot.getvalue()
+    img_bytes = shot.getvalue()
 elif f is not None:
-    imgBytes = f.getvalue()
+    img_bytes = f.getvalue()
 
-if imgBytes is None:
+if img_bytes is None:
     st.markdown(
         """
     <div class="emptyState" style="margin-top:1rem;">
@@ -256,22 +257,22 @@ if imgBytes is None:
     )
     st.stop()
 
-img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
+img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
 
 with st.spinner("Analysing…"):
-    allDets = cachedPredict(imgBytes)
-    detections = [d for d in allDets if d.get("conf", 0) >= threshold]
-    annotated = annotateImage(img, detections)
+    all_dets = cached_predict(img_bytes)
+    detections = [d for d in all_dets if d.get("conf", 0) >= threshold]
+    annotated = annotate_image(img, detections)
 
-imgCol, listCol = st.columns([1, 1], gap="large")
+img_col, list_col = st.columns([1, 1], gap="large")
 
-with imgCol:
+with img_col:
     st.image(annotated, caption="Your photo", width="stretch")
 
-with listCol:
-    imgKey = hash(imgBytes)
-    if st.session_state.get("lastImgKey") != imgKey:
-        st.session_state["lastImgKey"] = imgKey
+with list_col:
+    img_key = hash(img_bytes)
+    if st.session_state.get("lastImgKey") != img_key:
+        st.session_state["lastImgKey"] = img_key
         st.session_state["itemsSorted"] = st.session_state.get("itemsSorted", 0) + len(
             detections
         )
@@ -283,13 +284,13 @@ with listCol:
 
     t1, t2, t3 = st.columns(3, gap="small")
     t1.markdown(
-        statTile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True
+        stat_tile(st.session_state["itemsSorted"], "Sorted"), unsafe_allow_html=True
     )
     t2.markdown(
-        statTile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True
+        stat_tile(counts.get("Recyclable", 0), "Recyclable"), unsafe_allow_html=True
     )
     t3.markdown(
-        statTile(counts.get("General", 0) + counts.get("Unsure", 0), "General"),
+        stat_tile(counts.get("General", 0) + counts.get("Unsure", 0), "General"),
         unsafe_allow_html=True,
     )
 
@@ -315,16 +316,16 @@ with listCol:
         )
     else:
         for n, det in enumerate(detections, start=1):
-            binType, flag, tip = mapping.map_waste_item(det["class"])
-            renderCard(n, det, {"bin_type": binType, "flag": flag, "tip": tip})
+            bin_type, flag, tip = mapping.map_waste_item(det["class"])
+            render_card(n, det, {"bin_type": bin_type, "flag": flag, "tip": tip})
 
-sortedCount = st.session_state.get("itemsSorted", 0)
+sorted_count = st.session_state.get("itemsSorted", 0)
 st.markdown(
     f"""
 <div class="bottomBar">
     <span class="bbLabel">♻️ SortSmart</span>
     <span class="bbRight">
-        <span class="bbNum">{sortedCount}</span>
+        <span class="bbNum">{sorted_count}</span>
         <span class="bbUnit">items sorted this session</span>
     </span>
 </div>
