@@ -94,12 +94,13 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 
 **Combining confidence per bin (pile verdict):**
 
-Detections get grouped by the bin they map to, and each group's percentages combine into a single **final percentage** for that bin — that's the number the pile verdict shows, using the same wording scaling as the item recommendations.
+Detections get deduped to real objects first, then grouped by the bin they map to — each group's percentages combine into a single **final percentage** for that bin, using the same wording scaling as the item recommendations.
 
-* **Combine rule:** `final = 1 − (1 − a)(1 − b) …` — independent evidence, so every extra item pointing at the same bin pushes the number up. Items mapped to other bins never mix in.
-* **Example:** newspaper **72%** + paper **84%** → Paper bin final `1 − 0.28 × 0.16` = **96%**. The cup (**63%**, General waste) stays separate — General waste final = **63%**.
-* One item in a bin → that item's percentage, unchanged.
-* Grouping and combining happen at display time — the rule table stays percentage-free.
+* **Dedupe before combining:** one object can fire a pile of boxes (the milk carton fired ~30 in our own sample runs) — boxes of the same class overlapping the same thing are one object, so keep the highest-scoring box and drop the rest. One object = one vote; otherwise a single junk detection balloons the final to 99%+ and confidently tells the user the wrong bin.
+* **Combine rule:** `final = 1 − (1 − a)(1 − b) …` — independent evidence, so every extra object pointing at the same bin pushes the number up. Boxes from the same object never count twice, and objects mapped to other bins never mix in.
+* **Example:** newspaper **72%** + paper **84%** → Paper bin final `1 − 0.28 × 0.16` = **95.52%** (shown as **96%**). The cup (**63%**, General waste) stays separate — General waste final = **63%**. A milk carton firing 30 boxes at 63% still counts as one **63%**.
+* One object in a bin → that object's percentage, unchanged.
+* Grouping, deduping and combining happen at display time — the rule table stays percentage-free.
 
 ---
 
