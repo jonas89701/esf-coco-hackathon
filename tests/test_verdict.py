@@ -28,23 +28,23 @@ def testDistinctObjectsKept():
 def testLowOverlapKept():
     # barely overlapping boxes of the same class are different things
     dets = [
-        makeDet("bottle", 0.70, 0, 0, 100, 100),
-        makeDet("bottle", 0.65, 95, 95, 200, 200),
+        makeDet("plastic bottle", 0.70, 0, 0, 100, 100),
+        makeDet("plastic bottle", 0.65, 95, 95, 200, 200),
     ]
     assert len(dedupeDetections(dets)) == 2
 
 
 def testDifferentClassesNeverDeduped():
-    # its "same class" only — newspaper + paper are two separate votes
+    # its "same class" only — paper + cardboard are two separate votes
     dets = [
-        makeDet("newspaper", 0.72, 0, 0, 100, 100),
-        makeDet("paper", 0.84, 0, 0, 100, 100),
+        makeDet("paper", 0.72, 0, 0, 100, 100),
+        makeDet("cardboard box", 0.84, 0, 0, 100, 100),
     ]
     assert len(dedupeDetections(dets)) == 2
 
 
 def testCombineTwoIndependent():
-    # spec example: newspaper 72% + paper 84% -> 1 - 0.28*0.16 = 0.9552
+    # spec example: paper 72% + cardboard box 84% -> 1 - 0.28*0.16 = 0.9552
     assert combineConfidences([0.72, 0.84]) == pytest.approx(0.9552)
 
 
@@ -73,9 +73,9 @@ def testMilkCartonOneVote():
 
 
 def testSpecExampleGroupedByBin():
-    # newspaper + cardboard box -> Paper 95.52%; cup stays its own General 63%
+    # paper + cardboard box -> Paper 95.52%; paper cup stays its own General 63%
     dets = [
-        makeDet("newspaper", 0.72, 0, 0, 50, 50),
+        makeDet("paper", 0.72, 0, 0, 50, 50),
         makeDet("cardboard box", 0.84, 100, 100, 200, 200),
         makeDet("paper cup", 0.63, 300, 300, 400, 400),
     ]
@@ -90,8 +90,8 @@ def testSpecExampleGroupedByBin():
 
 def testVerdictSortedByConfidence():
     dets = [
-        makeDet("banana", 0.90, 0, 0, 50, 50),
-        makeDet("newspaper", 0.72, 100, 100, 200, 200),
+        makeDet("food waste", 0.90, 0, 0, 50, 50),
+        makeDet("paper", 0.72, 100, 100, 200, 200),
     ]
     verdict = pileVerdict(dets)
     assert verdict[0]["bin_type"] == "General waste (food)"
@@ -99,13 +99,13 @@ def testVerdictSortedByConfidence():
 
 
 def testNoBoxesKeptWithoutBox():
-    dets = [{"class": "apple", "conf": 0.9}]
+    dets = [{"class": "food waste", "conf": 0.9}]
     assert dedupeDetections(dets) == dets
     assert len(pileVerdict(dets)) == 1
 
 
 def testSingleLowConfidenceNoSplit():
     # one shy object (below WEAK) is low confidence, never a "mixed pile"
-    v = pileVerdict([makeDet("apple", 0.20, 0, 0, 50, 50)])
+    v = pileVerdict([makeDet("food waste", 0.20, 0, 0, 50, 50)])
     assert len(v) == 1
     assert v[0]["confidence"] == pytest.approx(0.20)

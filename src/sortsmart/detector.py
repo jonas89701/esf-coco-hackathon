@@ -10,30 +10,19 @@ BAKED_WEIGHTS = WEIGHTS_DIR / "yolov8s-worldv2_core.pt"
 
 DEFAULT_VOCAB = [
     "plastic bottle",
-    "bottle",
-    "water bottle",
     "beverage can",
-    "can",
-    "tin can",
     "glass bottle",
     "glass jar",
+    "paper",
     "cardboard box",
-    "newspaper",
-    "banana",
-    "apple",
-    "orange",
-    "carrot",
-    "broccoli",
-    "paper cup",
-    "plastic cup",
-    "cup",
-    "styrofoam container",
-    "sandwich",
-    "pizza",
     "milk carton",
     "liquid carton",
+    "paper cup",
+    "plastic cup",
+    "styrofoam container",
     "plastic fork",
     "plastic spoon",
+    "food waste",
 ]
 
 DEFAULT_CONF = 0.10
@@ -43,7 +32,10 @@ DEFAULT_CONF = 0.10
 def load_model():
     if BAKED_WEIGHTS.exists():
         try:
-            return YOLOWorld(str(BAKED_WEIGHTS))
+            model = YOLOWorld(str(BAKED_WEIGHTS))
+            if list(model.names.values()) == DEFAULT_VOCAB:
+                return model
+            # baked with an older vocabulary, fall through and re-bake
         except Exception:
             BAKED_WEIGHTS.unlink(missing_ok=True)
 

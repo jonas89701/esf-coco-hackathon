@@ -22,11 +22,17 @@ def testGlassBottle():
     assert flag == "Recyclable"
 
 
-def testBanana():
+def testFoodWaste():
     # no organic bin kerbside in hk, food scraps are general waste
-    binType, flag, _ = map_waste_item("banana")
+    binType, flag, _ = map_waste_item("food waste")
     assert binType == "General waste (food)"
     assert flag == "General"
+
+
+def testPaper():
+    binType, flag, _ = map_waste_item("paper")
+    assert binType == "Paper"
+    assert flag == "Recyclable"
 
 
 def testMilkCarton():

@@ -34,7 +34,7 @@ def testEmptyDetections():
 
 def testNoBoxSkipped():
     # missing box / empty dict / box=None should all just get skipped
-    out = annotateImage(makeImg(), [{"class": "banana"}, {}, {"box": None}])
+    out = annotateImage(makeImg(), [{"class": "plastic bottle"}, {}, {"box": None}])
     assert isinstance(out, Image.Image)
 
 
