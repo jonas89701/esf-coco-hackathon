@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 
-from sortsmart import detector, mapping
+from sortsmart import detector, mapping, verdict
 from sortsmart.annotate import annotateImage
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
@@ -61,6 +61,17 @@ st.markdown(
 .emptyState h4 { margin: 0 0 0.4rem 0; color: #1c2b22; font-size: 1.15rem; }
 .emptyState ul { display: inline-block; text-align: left; margin-top: 0.5rem; color: #5a6b62; font-size: 0.92rem; }
 
+.verdictCard {
+    background: #fff; border-radius: 14px; padding: 1rem 1.15rem;
+    margin-bottom: 1rem; border-left: 6px solid #0b7a3b;
+    box-shadow: 0 2px 10px rgba(20,40,30,0.06);
+    animation: fadeInUp 0.42s ease backwards;
+}
+.verdictCard .verdictName { font-weight: 800; font-size: 1.05rem; color: #1c2b22; }
+.verdictCard .verdictTip  { color: #4b5a52; font-size: 0.9rem; margin-top: 0.65rem; line-height: 1.35; }
+.verdictPills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.verdictPill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 3px 11px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; color: #fff; }
+
 .bottomBar {
     position: fixed; left: 0; right: 0; bottom: 0;
     background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -93,6 +104,9 @@ label[data-testid="stWidgetLabel"] p { font-weight: 600; color: #2a3a30; }
     .emptyState { background: #141c16; border-color: #2a3a30; color: #a3b3a8; }
     .emptyState h4 { color: #eef5ef; }
     .emptyState ul { color: #97a89c; }
+    .verdictCard { background: #18211a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); color: #e8f0ea; }
+    .verdictCard .verdictName { color: #eef5ef; }
+    .verdictCard .verdictTip  { color: #a3b3a8; }
     .bottomBar { background: rgba(19,26,21,0.92); border-top: 1px solid #1f2a23; box-shadow: 0 -6px 24px rgba(0,0,0,0.5); }
     .bottomBar .bbLabel { color: #c6d4ca; }
     .bottomBar .bbNum { color: #34c46f; }
@@ -211,6 +225,39 @@ def statTile(num, label):
     """
 
 
+def renderVerdict(vs):
+    # pile verdict: one conclusion per bin, top bin leads the card
+    if not vs:
+        return
+    top = vs[0]
+    topPct = max(0, min(100, int(round(top["confidence"] * 100))))
+
+    if topPct >= STRONG_CONF:
+        verdict_bin = f"Recycle this pile as {top['bin_type'].lower()}!"
+    elif topPct >= WEAK_CONF:
+        verdict_bin = f"Most of this pile goes to {top['bin_type'].lower()}."
+    else:
+        verdict_bin = f"Mixed pile — check each item before binning."
+
+    pills = "".join(
+        f'<span class="verdictPill" style="background:{FLAGS.get(v["flag"], FLAGS["Unsure"])["bg"]};">'
+        f'{FLAGS.get(v["flag"], FLAGS["Unsure"])["icon"]} {v["bin_type"]} '
+        f'{max(0, min(100, int(round(v["confidence"] * 100))))}%</span>'
+        for v in vs
+    )
+
+    st.markdown(
+        f"""
+    <div class="verdictCard" style="border-left-color: {FLAGS.get(top['flag'], FLAGS['Unsure'])['bg']};">
+        <div class="verdictName">{topPct}% confident — {verdict_bin}</div>
+        <div class="verdictTip">💡 One object counts once — most of the pile lands in {top['bin_type'].lower()}.</div>
+        <div class="verdictPills">{pills}</div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
 with st.sidebar:
     st.markdown("### ♻️ SortSmart")
     st.caption("AI recycling assistant")
@@ -284,7 +331,8 @@ img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
 with st.spinner("Analysing…"):
     allDets = cachedPredict(imgBytes)
     detections = [d for d in allDets if d.get("conf", 0) >= threshold]
-    annotated = annotateImage(img, detections)
+    objects = verdict.dedupeDetections(detections)
+    annotated = annotateImage(img, objects)
 
 imgCol, listCol = st.columns([1, 1], gap="large")
 
@@ -296,11 +344,11 @@ with listCol:
     if st.session_state.get("lastImgKey") != imgKey:
         st.session_state["lastImgKey"] = imgKey
         st.session_state["itemsSorted"] = st.session_state.get("itemsSorted", 0) + len(
-            detections
+            objects
         )
 
     counts = {k: 0 for k in FLAGS}
-    for d in detections:
+    for d in objects:
         _, flag, _ = mapping.map_waste_item(d["class"])
         counts[flag] = counts.get(flag, 0) + 1
 
@@ -317,9 +365,10 @@ with listCol:
     )
 
     st.write("")
-    st.markdown(f"#### Detected items ({len(detections)})")
+    renderVerdict(verdict.pileVerdict(objects))
+    st.markdown(f"#### Detected items ({len(objects)})")
 
-    if not detections:
+    if not objects:
         st.markdown(
             """
         <div class="emptyState">
@@ -337,7 +386,7 @@ with listCol:
             unsafe_allow_html=True,
         )
     else:
-        for n, det in enumerate(detections, start=1):
+        for n, det in enumerate(objects, start=1):
             binType, flag, tip = mapping.map_waste_item(det["class"])
             renderCard(n, det, {"bin_type": binType, "flag": flag, "tip": tip})
 

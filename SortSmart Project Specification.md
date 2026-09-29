@@ -121,7 +121,7 @@ coco/
 ├── pyproject.toml                       # uv project config + pinned dependency list
 ├── .gitignore
 ├── weights/                             # cached YOLO-World weights w/ baked vocabulary
-├── src/sortsmart/                       # package (main.py, detector.py, mapping.py, annotate.py)
+├── src/sortsmart/                       # package (main.py, detector.py, mapping.py, annotate.py, verdict.py)
 ├── data/
 │   └── sample_images/                   # pre-baked demo images (demo can never fail)
 ├── notebooks/                           # exploration / troubleshooting notes
