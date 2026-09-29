@@ -171,6 +171,17 @@ STRONG_CONF = 50
 WEAK_CONF = 25
 
 
+def flagVerb(flag, binType, subject="this"):
+    # one source of truth for flag -> instruction wording (cards + pile verdict)
+    if flag == "Recyclable":
+        return f"Recycle {subject} as {binType.lower()}"
+    if flag == "General":
+        return f"Bin {subject} in {binType.lower()}"
+    if flag == "Special":
+        return f"Take {subject} to {binType}"
+    return "Check local rules"
+
+
 def renderCard(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
@@ -181,14 +192,7 @@ def renderCard(n, det, info):
     delay = min(n - 1, 8) * 0.05
 
     # wording scales with how sure we are, the % gets folded into the line
-    if flag == "Recyclable":
-        verb = f"Recycle this as {binType.lower()}"
-    elif flag == "General":
-        verb = f"Bin this in {binType.lower()}"
-    elif flag == "Special":
-        verb = f"Take this to {binType}"
-    else:
-        verb = "Check local rules"
+    verb = flagVerb(flag, binType)
     if confPct >= STRONG_CONF:
         rec = f"<b>{verb}!</b> ({confPct}% confident)"
     elif confPct >= WEAK_CONF:
@@ -233,26 +237,22 @@ def renderVerdict(vs):
     topPct = max(0, min(100, int(round(top["confidence"] * 100))))
     flag = top.get("flag", "Unsure")
     binType = top["bin_type"]
+    verbPhrase = flagVerb(flag, binType, subject="this pile")
 
-    # same flag-based verbs as the item cards, so General/Special never say "recycle"
-    if flag == "Recyclable":
-        verbPhrase = f"Recycle this pile as {binType.lower()}"
-    elif flag == "General":
-        verbPhrase = f"Bin this pile in {binType.lower()}"
-    elif flag == "Special":
-        verbPhrase = f"Take this pile to {binType}"
-    else:
-        verbPhrase = "Check local rules"
-
+    # "mixed" only when there really are several bins; a low score on one
+    # lonely object is low confidence, not a split
     if topPct >= STRONG_CONF:
         verdictPhrase = f"{verbPhrase}!"
-        tipLine = f"One object counts once — most of the pile lands in {binType.lower()}"
+        tipLine = f"Most of this pile lands in {binType}"
     elif topPct >= WEAK_CONF:
         verdictPhrase = f"{verbPhrase}."
-        tipLine = f"Most of this pile goes to {binType.lower()}"
-    else:
+        tipLine = f"Most of this pile goes to {binType}"
+    elif len(vs) > 1:
         verdictPhrase = "Mixed pile — check each item before binning"
         tipLine = "Items are split across bins — check each card for its own bin"
+    else:
+        verdictPhrase = f"Low confidence — {verbPhrase}"
+        tipLine = f"Only one clear signal, below {WEAK_CONF}% — check the item before binning"
 
     pills = "".join(
         f'<span class="verdictPill" style="background:{FLAGS.get(v["flag"], FLAGS["Unsure"])["bg"]};">'

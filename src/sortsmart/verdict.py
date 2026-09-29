@@ -51,9 +51,10 @@ def combineConfidences(confs):
 
 
 def pileVerdict(detections):
-    # dedupe to real objects, group by the bin they map to, combine each bin
+    # expects already-deduped detections (main.py owns the single dedupe pass);
+    # groups real objects by the bin they map to and combines each bin
     bins = {}
-    for det in dedupeDetections(detections):
+    for det in detections:
         binType, flag, _ = map_waste_item(det.get("class", ""))
         if binType not in bins:
             bins[binType] = {"flag": flag, "confs": []}

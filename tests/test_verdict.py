@@ -62,9 +62,10 @@ def testCombineClamped():
 
 
 def testMilkCartonOneVote():
-    # 30 boxes at 63% still counts as one 63%, not ~99.99%
+    # 30 boxes at 63% dedupe to one object, still counts as one 63%
     dets = [makeDet("milk carton", 0.63, 10, 10, 210, 210) for _ in range(30)]
-    verdict = pileVerdict(dets)
+    objects = dedupeDetections(dets)
+    verdict = pileVerdict(objects)
     assert len(verdict) == 1
     assert verdict[0]["bin_type"] == "Special — Green@Community"
     assert verdict[0]["count"] == 1
@@ -101,3 +102,10 @@ def testNoBoxesKeptWithoutBox():
     dets = [{"class": "apple", "conf": 0.9}]
     assert dedupeDetections(dets) == dets
     assert len(pileVerdict(dets)) == 1
+
+
+def testSingleLowConfidenceNoSplit():
+    # one shy object (below WEAK) is low confidence, never a "mixed pile"
+    v = pileVerdict([makeDet("apple", 0.20, 0, 0, 50, 50)])
+    assert len(v) == 1
+    assert v[0]["confidence"] == pytest.approx(0.20)
