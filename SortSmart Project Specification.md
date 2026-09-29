@@ -22,7 +22,7 @@ UN SDG 12 — Responsible Consumption and Production (reducing contamination and
                  │
                  ▼
 ┌──────────────────────────────────────────────┐
-│ 1. YOLO-World Detection (open-vocabulary)    │ ──► Detects our ~14 named items + boxes
+│ 1. YOLO-World Detection (open-vocabulary)    │ ──► Detects our ~12 named items + boxes
 │    (ultralytics, vocabulary baked into       │
 │     weights for offline use)                 │
 └──────────────────────────────────────────────┘
@@ -67,10 +67,10 @@ As a user I want to…
 
 **Model & AI approach:**
 
-* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~14 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *beverage can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
+* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~12 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *beverage can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
 * **Offline packaging:** bake the vocabulary into the weights (`model.set_classes(...)` → `model.save("yolov8s-worldv2_core.pt")`) **once, while online**, so demo day is fully offline and loads fast.
 * **Vocabulary discipline:** keep the list short and visually distinct (research: long/open class lists sharply hurt zero-shot precision). Validate prompts against real sample photos and keep the winners.
-* **Core vocabulary (14 classes):** `plastic bottle`, `beverage can`, `glass bottle`, `glass jar`, `paper`, `cardboard box`, `milk carton`, `liquid carton`, `paper cup`, `plastic cup`, `styrofoam container`, `plastic fork`, `plastic spoon`, `food waste`. One class per real item — no generic duplicates (`bottle`, `can`, `cup`) sitting next to their own specific versions, because different class labels never dedupe together, so a generic + specific pair double-counts one physical object in the pile verdict. Food waste is a single class: banana, orange and pizza all tell the same one-rule story.
+* **Core vocabulary (12 classes):** `plastic bottle`, `beverage can`, `paper`, `cardboard box`, `beverage carton`, `liquid carton`, `paper cup`, `plastic cup`, `foam container`, `plastic fork`, `plastic spoon`, `food`. One class per real item — no generic duplicates (`bottle`, `can`, `cup`) sitting next to their own specific versions, because different class labels never dedupe together, so a generic + specific pair double-counts one physical object in the pile verdict. Food is a single class: banana, orange and pizza all tell the same one-rule story. Every name gets scored against the sample photos before it ships — that's how `milk carton` became `beverage carton` (0.00 → 0.89 on our own carton photo) and why the glass classes are gone (their scores drowned out `plastic bottle` on our bottle photos, and no sample photo has glass in it).
 * **Stretch goal (only if ahead):** fine-tune on a small custom "waste item" detection set (e.g. TACO or re-annotated TrashNet in YOLO format) using the team's YOLO knowledge.
 * **Fallback:** switch to the fixed-COCO YOLOv8n we already use — it trims which items detect, but still demos.
 
@@ -82,12 +82,11 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 | :---- | :---- | :---- | :---- |
 | plastic bottle | Plastic bottles | Recyclable | "Rinse, remove cap & label" |
 | beverage can | Metals | Recyclable | "Rinse, remove label" |
-| glass bottle | Glass | Recyclable | "Rinse, remove cap; no broken glass" |
 | paper | Paper | Recyclable | "Clean & dry; remove staples & plastic covers" |
-| food waste | General waste (food) | General | "Compost if your school has food waste collection" |
+| food | General waste (food) | General | "Compost if your school has food waste collection" |
 | paper cup | General waste | General | "Plastic-coated — not recyclable" |
-| plastic cup, styrofoam container | General waste | General | "Not accepted in recycling bins" |
-| milk carton / liquid carton | Special — Green@Community | Special | "Wash, dry, remove cap; NOT the street bin" |
+| plastic cup, foam container | General waste | General | "Not accepted in recycling bins" |
+| beverage carton / liquid carton | Special — Green@Community | Special | "Wash, dry, remove cap; NOT the street bin" |
 | *(anything not mapped / below threshold)* | Check locally | Unsure | "Bin in general waste or check the item label" |
 
 *Note: the rule table stays percentage-free — the confidence % gets appended to the tip at display time (tip + " (12% confident)"), and how the wording scales with the score is decided in the display layer.*
