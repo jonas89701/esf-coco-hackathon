@@ -22,7 +22,7 @@ UN SDG 12 — Responsible Consumption and Production (reducing contamination and
                  │
                  ▼
 ┌──────────────────────────────────────────────┐
-│ 1. YOLO-World Detection (open-vocabulary)    │ ──► Detects our ~12 named items + boxes
+│ 1. YOLO-World Detection (open-vocabulary)    │ ──► Detects our ~14 named items + boxes
 │    (ultralytics, vocabulary baked into       │
 │     weights for offline use)                 │
 └──────────────────────────────────────────────┘
@@ -52,7 +52,7 @@ As a user I want to…
 * know the **bin type for each item** (Paper / Plastic bottles / Metals / Glass / General waste / Special) with a **confidence score**.
 * get a **1-line prep tip** for each item (e.g. "rinse the bottle, remove the cap") **with the detection confidence inlined as a percentage** — e.g. "Recycle this as paper! (10% confident)".
 * have the recommendation **wording account for the percentage**: high scores read as a direct instruction ("Recycle this as paper! (82% confident)"), middle scores stay neutral ("Recycle this as paper. (43% confident)"), low scores hedge so I know to double-check ("Looks like paper — 10%, check the label first"). Exact cutoffs get tuned alongside the confidence threshold — zero-shot scores run low and stragglers sit just above the floor, so one flat sentence would read the same for 12% junk and a solid 85%.
-* see a **final combined confidence for each bin** — when several items land in the same bin (newspaper + paper → Paper), their percentages combine into one final number for that bin; items heading elsewhere (cup → General waste) keep their own.
+* see a **final combined confidence for each bin** — when several items land in the same bin (paper + cardboard box → Paper), their percentages combine into one final number for that bin; items heading elsewhere (cup → General waste) keep their own.
 * see a running **"items sorted correctly" counter** during the session to reinforce learning.
 
 ---
@@ -67,9 +67,10 @@ As a user I want to…
 
 **Model & AI approach:**
 
-* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~12 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *beverage can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
+* **Primary — YOLO-World (ultralytics), open-vocabulary, zero training.** We supply a short vocabulary of ~14 core items via `model.set_classes([...])`. Unlike fixed-COCO YOLO, this lets us detect gaps like *beverage can*, *milk carton*, *styrofoam container*, *paper cup* that COCO's 80 classes don't cover. We author the entire vocab-to-bin rule logic ourselves — "pre-existing AI effectively integrated" with substantial custom logic, exactly what the rubric rewards.
 * **Offline packaging:** bake the vocabulary into the weights (`model.set_classes(...)` → `model.save("yolov8s-worldv2_core.pt")`) **once, while online**, so demo day is fully offline and loads fast.
 * **Vocabulary discipline:** keep the list short and visually distinct (research: long/open class lists sharply hurt zero-shot precision). Validate prompts against real sample photos and keep the winners.
+* **Core vocabulary (14 classes):** `plastic bottle`, `beverage can`, `glass bottle`, `glass jar`, `paper`, `cardboard box`, `milk carton`, `liquid carton`, `paper cup`, `plastic cup`, `styrofoam container`, `plastic fork`, `plastic spoon`, `food waste`. One class per real item — no generic duplicates (`bottle`, `can`, `cup`) sitting next to their own specific versions, because different class labels never dedupe together, so a generic + specific pair double-counts one physical object in the pile verdict. Food waste is a single class: banana, orange and pizza all tell the same one-rule story.
 * **Stretch goal (only if ahead):** fine-tune on a small custom "waste item" detection set (e.g. TACO or re-annotated TrashNet in YOLO format) using the team's YOLO knowledge.
 * **Fallback:** switch to the fixed-COCO YOLOv8n we already use — it trims which items detect, but still demos.
 
@@ -79,10 +80,11 @@ HK kerbside recycling bins accept: **paper**, **plastic bottles (PET/HDPE)**, **
 
 | Expected object | Bin type | Flag | Prep tip |
 | :---- | :---- | :---- | :---- |
-| bottle / plastic bottle | Plastic bottles | Recyclable | "Rinse, remove cap & label" |
-| can / beverage can | Metals | Recyclable | "Rinse, remove label" |
+| plastic bottle | Plastic bottles | Recyclable | "Rinse, remove cap & label" |
+| beverage can | Metals | Recyclable | "Rinse, remove label" |
 | glass bottle | Glass | Recyclable | "Rinse, remove cap; no broken glass" |
-| banana, apple, orange | General waste (food) | General | "Compost if your school has food waste collection" |
+| paper | Paper | Recyclable | "Clean & dry; remove staples & plastic covers" |
+| food waste | General waste (food) | General | "Compost if your school has food waste collection" |
 | paper cup | General waste | General | "Plastic-coated — not recyclable" |
 | plastic cup, styrofoam container | General waste | General | "Not accepted in recycling bins" |
 | milk carton / liquid carton | Special — Green@Community | Special | "Wash, dry, remove cap; NOT the street bin" |
@@ -98,7 +100,7 @@ Detections get deduped to real objects first, then grouped by the bin they map t
 
 * **Dedupe before combining:** one object can fire a pile of boxes (the milk carton fired ~30 in our own sample runs) — boxes of the same class overlapping the same thing are one object, so keep the highest-scoring box and drop the rest. One object = one vote; otherwise a single junk detection balloons the final to 99%+ and confidently tells the user the wrong bin.
 * **Combine rule:** `final = 1 − (1 − a)(1 − b) …` — independent evidence, so every extra object pointing at the same bin pushes the number up. Boxes from the same object never count twice, and objects mapped to other bins never mix in.
-* **Example:** newspaper **72%** + paper **84%** → Paper bin final `1 − 0.28 × 0.16` = **95.52%** (shown as **96%**). The cup (**63%**, General waste) stays separate — General waste final = **63%**. A milk carton firing 30 boxes at 63% still counts as one **63%**.
+* **Example:** paper **72%** + cardboard box **84%** → Paper bin final `1 − 0.28 × 0.16` = **95.52%** (shown as **96%**). The paper cup (**63%**, General waste) stays separate — General waste final = **63%**. A milk carton firing 30 boxes at 63% still counts as one **63%**.
 * One object in a bin → that object's percentage, unchanged.
 * Grouping, deduping and combining happen at display time — the rule table stays percentage-free.
 
