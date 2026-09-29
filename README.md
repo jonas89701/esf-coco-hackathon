@@ -73,6 +73,16 @@ Dependencies are managed by uv (`pyproject.toml` + `uv.lock`).
 | NumPy | Array/numpy handling for detections | https://numpy.org/ |
 | pi-heif | HEIC photo support | https://github.com/strukturag/libheif |
 
+## Features
+
+- **Photo or camera input** — upload a photo or snap one with the webcam.
+- **Multi-item detection** — every item in the frame is found and labelled with boxes + confidence.
+- **Per-item bin suggestion** — each item maps to its correct HK bin (Paper / Plastic bottles / Metals / Glass / General waste / Special) with a prep tip.
+- **Confidence-scaled wording** — high scores read as a direct instruction, low scores hedge so you double-check.
+- **Pile verdict** — duplicate boxes are deduped to real objects, then compressed into one final confidence per bin for the whole photo.
+- **Session counter** — tracks how many items you've sorted to reinforce learning.
+- **Works offline** — weights are baked once, then everything runs with no network.
+
 ## AI Disclosure
 
 *(to be filled in before submission — list every AI tool used and its exact role)*

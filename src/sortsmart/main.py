@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 
-from sortsmart import detector, mapping
+from sortsmart import detector, mapping, verdict
 from sortsmart.annotate import annotateImage
 
 st.set_page_config(page_title="SortSmart", page_icon="♻️", layout="wide")
@@ -61,6 +61,17 @@ st.markdown(
 .emptyState h4 { margin: 0 0 0.4rem 0; color: #1c2b22; font-size: 1.15rem; }
 .emptyState ul { display: inline-block; text-align: left; margin-top: 0.5rem; color: #5a6b62; font-size: 0.92rem; }
 
+.verdictCard {
+    background: #fff; border-radius: 14px; padding: 1rem 1.15rem;
+    margin-bottom: 1rem; border-left: 6px solid #0b7a3b;
+    box-shadow: 0 2px 10px rgba(20,40,30,0.06);
+    animation: fadeInUp 0.42s ease backwards;
+}
+.verdictCard .verdictName { font-weight: 800; font-size: 1.05rem; color: #1c2b22; }
+.verdictCard .verdictTip  { color: #4b5a52; font-size: 0.9rem; margin-top: 0.65rem; line-height: 1.35; }
+.verdictPills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.verdictPill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 3px 11px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; color: #fff; }
+
 .bottomBar {
     position: fixed; left: 0; right: 0; bottom: 0;
     background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -93,6 +104,9 @@ label[data-testid="stWidgetLabel"] p { font-weight: 600; color: #2a3a30; }
     .emptyState { background: #141c16; border-color: #2a3a30; color: #a3b3a8; }
     .emptyState h4 { color: #eef5ef; }
     .emptyState ul { color: #97a89c; }
+    .verdictCard { background: #18211a; box-shadow: 0 2px 10px rgba(0,0,0,0.5); color: #e8f0ea; }
+    .verdictCard .verdictName { color: #eef5ef; }
+    .verdictCard .verdictTip  { color: #a3b3a8; }
     .bottomBar { background: rgba(19,26,21,0.92); border-top: 1px solid #1f2a23; box-shadow: 0 -6px 24px rgba(0,0,0,0.5); }
     .bottomBar .bbLabel { color: #c6d4ca; }
     .bottomBar .bbNum { color: #34c46f; }
@@ -157,6 +171,17 @@ STRONG_CONF = 50
 WEAK_CONF = 25
 
 
+def flagVerb(flag, binType, subject="this"):
+    # one source of truth for flag -> instruction wording (cards + pile verdict)
+    if flag == "Recyclable":
+        return f"Recycle {subject} as {binType.lower()}"
+    if flag == "General":
+        return f"Bin {subject} in {binType.lower()}"
+    if flag == "Special":
+        return f"Take {subject} to {binType}"
+    return "Check local rules"
+
+
 def renderCard(n, det, info):
     flag = info.get("flag", "Unsure")
     f = FLAGS.get(flag, FLAGS["Unsure"])
@@ -167,14 +192,7 @@ def renderCard(n, det, info):
     delay = min(n - 1, 8) * 0.05
 
     # wording scales with how sure we are, the % gets folded into the line
-    if flag == "Recyclable":
-        verb = f"Recycle this as {binType.lower()}"
-    elif flag == "General":
-        verb = f"Bin this in {binType.lower()}"
-    elif flag == "Special":
-        verb = f"Take this to {binType}"
-    else:
-        verb = "Check local rules"
+    verb = flagVerb(flag, binType)
     if confPct >= STRONG_CONF:
         rec = f"<b>{verb}!</b> ({confPct}% confident)"
     elif confPct >= WEAK_CONF:
@@ -209,6 +227,51 @@ def statTile(num, label):
         <div class="label">{label}</div>
     </div>
     """
+
+
+def renderVerdict(vs):
+    # pile verdict: one conclusion per bin, top bin leads the card
+    if not vs:
+        return
+    top = vs[0]
+    topPct = max(0, min(100, int(round(top["confidence"] * 100))))
+    flag = top.get("flag", "Unsure")
+    binType = top["bin_type"]
+    verbPhrase = flagVerb(flag, binType, subject="this pile")
+
+    # "mixed" only when there really are several bins; a low score on one
+    # lonely object is low confidence, not a split
+    if topPct >= STRONG_CONF:
+        verdictPhrase = f"{verbPhrase}!"
+        tipLine = f"Most of this pile lands in {binType}"
+    elif topPct >= WEAK_CONF:
+        verdictPhrase = f"{verbPhrase}."
+        tipLine = f"Most of this pile goes to {binType}"
+    elif len(vs) > 1:
+        verdictPhrase = "Mixed pile — check each item before binning"
+        tipLine = "Items are split across bins — check each card for its own bin"
+    else:
+        verdictPhrase = f"Low confidence — {verbPhrase}"
+        tipLine = f"Only one clear signal, below {WEAK_CONF}% — check the item before binning"
+
+    pills = "".join(
+        f'<span class="verdictPill" style="background:{FLAGS.get(v["flag"], FLAGS["Unsure"])["bg"]};">'
+        f'{FLAGS.get(v["flag"], FLAGS["Unsure"])["icon"]} {v["bin_type"]} '
+        f'{max(0, min(100, int(round(v["confidence"] * 100))))}%'
+        f'{f" ×{v["count"]}" if v["count"] > 1 else ""}</span>'
+        for v in vs
+    )
+
+    st.markdown(
+        f"""
+    <div class="verdictCard" style="border-left-color: {FLAGS.get(flag, FLAGS['Unsure'])['bg']};">
+        <div class="verdictName">{topPct}% confident — {verdictPhrase}</div>
+        <div class="verdictTip">💡 {tipLine}</div>
+        <div class="verdictPills">{pills}</div>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 with st.sidebar:
@@ -284,7 +347,8 @@ img = Image.open(io.BytesIO(imgBytes)).convert("RGB")
 with st.spinner("Analysing…"):
     allDets = cachedPredict(imgBytes)
     detections = [d for d in allDets if d.get("conf", 0) >= threshold]
-    annotated = annotateImage(img, detections)
+    objects = verdict.dedupeDetections(detections)
+    annotated = annotateImage(img, objects)
 
 imgCol, listCol = st.columns([1, 1], gap="large")
 
@@ -296,11 +360,11 @@ with listCol:
     if st.session_state.get("lastImgKey") != imgKey:
         st.session_state["lastImgKey"] = imgKey
         st.session_state["itemsSorted"] = st.session_state.get("itemsSorted", 0) + len(
-            detections
+            objects
         )
 
     counts = {k: 0 for k in FLAGS}
-    for d in detections:
+    for d in objects:
         _, flag, _ = mapping.map_waste_item(d["class"])
         counts[flag] = counts.get(flag, 0) + 1
 
@@ -317,9 +381,10 @@ with listCol:
     )
 
     st.write("")
-    st.markdown(f"#### Detected items ({len(detections)})")
+    renderVerdict(verdict.pileVerdict(objects))
+    st.markdown(f"#### Detected items ({len(objects)})")
 
-    if not detections:
+    if not objects:
         st.markdown(
             """
         <div class="emptyState">
@@ -337,7 +402,7 @@ with listCol:
             unsafe_allow_html=True,
         )
     else:
-        for n, det in enumerate(detections, start=1):
+        for n, det in enumerate(objects, start=1):
             binType, flag, tip = mapping.map_waste_item(det["class"])
             renderCard(n, det, {"bin_type": binType, "flag": flag, "tip": tip})
 
