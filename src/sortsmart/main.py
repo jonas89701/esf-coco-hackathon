@@ -129,18 +129,16 @@ FLAGS = {
 CLASS_ICONS = {
     "plastic bottle": "🧴",
     "beverage can": "🥫",
-    "glass bottle": "🍶",
-    "glass jar": "🫙",
     "paper": "📄",
     "cardboard box": "📦",
-    "milk carton": "🥛",
+    "beverage carton": "🥛",
     "liquid carton": "🧃",
     "paper cup": "🥤",
     "plastic cup": "🥤",
-    "styrofoam container": "🥡",
+    "foam container": "🥡",
     "plastic fork": "🍴",
     "plastic spoon": "🥄",
-    "food waste": "🍎",
+    "food": "🍎",
 }
 
 

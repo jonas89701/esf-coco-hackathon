@@ -4,14 +4,11 @@ WASTE_RULES = {
     "plastic bottle": ("Plastic bottles", "Recyclable", "Rinse, remove cap & label"),
     # Metals
     "beverage can": ("Metals", "Recyclable", "Rinse, remove label"),
-    # Glass
-    "glass bottle": ("Glass", "Recyclable", "Rinse, remove cap; no broken glass"),
-    "glass jar": ("Glass", "Recyclable", "Rinse, remove lid; no broken glass"),
     # Paper & Cardboard
     "paper": ("Paper", "Recyclable", "Clean & dry; remove staples & plastic covers"),
     "cardboard box": ("Paper", "Recyclable", "Flatten box; remove tape & staples"),
     # General Waste (Food Waste)
-    "food waste": (
+    "food": (
         "General waste (food)",
         "General",
         "Compost if your school has food waste collection",
@@ -19,7 +16,7 @@ WASTE_RULES = {
     # General Waste (Cups & Containers)
     "paper cup": ("General waste", "General", "Plastic-coated — not recyclable"),
     "plastic cup": ("General waste", "General", "Not accepted in recycling bins"),
-    "styrofoam container": (
+    "foam container": (
         "General waste",
         "General",
         "Not accepted in recycling bins",
@@ -27,7 +24,7 @@ WASTE_RULES = {
     "plastic fork": ("General waste", "General", "Not accepted in recycling bins"),
     "plastic spoon": ("General waste", "General", "Not accepted in recycling bins"),
     # Special Collection (Liquid Cartons)
-    "milk carton": (
+    "beverage carton": (
         "Special — Green@Community",
         "Special",
         "Wash, dry, remove cap; NOT the street bin",

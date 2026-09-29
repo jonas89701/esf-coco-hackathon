@@ -8,9 +8,9 @@ def makeDet(cls, conf, x1, y1, x2, y2):
 
 
 def testSameObjectDropped():
-    # the milk carton case: ~30 overlapping boxes -> one object, highest score
-    dets = [makeDet("milk carton", 0.63, 10, 10, 210, 210) for _ in range(30)]
-    dets[0] = makeDet("milk carton", 0.71, 10, 10, 210, 210)
+    # the carton case: ~30 overlapping boxes -> one object, highest score
+    dets = [makeDet("beverage carton", 0.63, 10, 10, 210, 210) for _ in range(30)]
+    dets[0] = makeDet("beverage carton", 0.71, 10, 10, 210, 210)
     kept = dedupeDetections(dets)
     assert len(kept) == 1
     assert kept[0]["conf"] == pytest.approx(0.71)
@@ -63,7 +63,7 @@ def testCombineClamped():
 
 def testMilkCartonOneVote():
     # 30 boxes at 63% dedupe to one object, still counts as one 63%
-    dets = [makeDet("milk carton", 0.63, 10, 10, 210, 210) for _ in range(30)]
+    dets = [makeDet("beverage carton", 0.63, 10, 10, 210, 210) for _ in range(30)]
     objects = dedupeDetections(dets)
     verdict = pileVerdict(objects)
     assert len(verdict) == 1
@@ -90,7 +90,7 @@ def testSpecExampleGroupedByBin():
 
 def testVerdictSortedByConfidence():
     dets = [
-        makeDet("food waste", 0.90, 0, 0, 50, 50),
+        makeDet("food", 0.90, 0, 0, 50, 50),
         makeDet("paper", 0.72, 100, 100, 200, 200),
     ]
     verdict = pileVerdict(dets)
@@ -99,13 +99,13 @@ def testVerdictSortedByConfidence():
 
 
 def testNoBoxesKeptWithoutBox():
-    dets = [{"class": "food waste", "conf": 0.9}]
+    dets = [{"class": "food", "conf": 0.9}]
     assert dedupeDetections(dets) == dets
     assert len(pileVerdict(dets)) == 1
 
 
 def testSingleLowConfidenceNoSplit():
     # one shy object (below WEAK) is low confidence, never a "mixed pile"
-    v = pileVerdict([makeDet("food waste", 0.20, 0, 0, 50, 50)])
+    v = pileVerdict([makeDet("food", 0.20, 0, 0, 50, 50)])
     assert len(v) == 1
     assert v[0]["confidence"] == pytest.approx(0.20)

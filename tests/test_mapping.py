@@ -16,15 +16,9 @@ def testBeverageCan():
     assert flag == "Recyclable"
 
 
-def testGlassBottle():
-    binType, flag, _ = map_waste_item("glass bottle")
-    assert binType == "Glass"
-    assert flag == "Recyclable"
-
-
-def testFoodWaste():
+def testFood():
     # no organic bin kerbside in hk, food scraps are general waste
-    binType, flag, _ = map_waste_item("food waste")
+    binType, flag, _ = map_waste_item("food")
     assert binType == "General waste (food)"
     assert flag == "General"
 
@@ -35,8 +29,8 @@ def testPaper():
     assert flag == "Recyclable"
 
 
-def testMilkCarton():
-    binType, flag, _ = map_waste_item("milk carton")
+def testBeverageCarton():
+    binType, flag, _ = map_waste_item("beverage carton")
     assert binType == "Special — Green@Community"
     assert flag == "Special"
 
@@ -44,6 +38,12 @@ def testMilkCarton():
 def testPaperCupIsGeneral():
     # coated cups look like paper but are never recyclable
     binType, flag, _ = map_waste_item("paper cup")
+    assert binType == "General waste"
+    assert flag == "General"
+
+
+def testFoamContainerIsGeneral():
+    binType, flag, _ = map_waste_item("foam container")
     assert binType == "General waste"
     assert flag == "General"
 
