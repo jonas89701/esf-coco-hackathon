@@ -231,26 +231,42 @@ def renderVerdict(vs):
         return
     top = vs[0]
     topPct = max(0, min(100, int(round(top["confidence"] * 100))))
+    flag = top.get("flag", "Unsure")
+    binType = top["bin_type"]
+
+    # same flag-based verbs as the item cards, so General/Special never say "recycle"
+    if flag == "Recyclable":
+        verbPhrase = f"Recycle this pile as {binType.lower()}"
+    elif flag == "General":
+        verbPhrase = f"Bin this pile in {binType.lower()}"
+    elif flag == "Special":
+        verbPhrase = f"Take this pile to {binType}"
+    else:
+        verbPhrase = "Check local rules"
 
     if topPct >= STRONG_CONF:
-        verdict_bin = f"Recycle this pile as {top['bin_type'].lower()}!"
+        verdictPhrase = f"{verbPhrase}!"
+        tipLine = f"One object counts once — most of the pile lands in {binType.lower()}"
     elif topPct >= WEAK_CONF:
-        verdict_bin = f"Most of this pile goes to {top['bin_type'].lower()}."
+        verdictPhrase = f"{verbPhrase}."
+        tipLine = f"Most of this pile goes to {binType.lower()}"
     else:
-        verdict_bin = f"Mixed pile — check each item before binning."
+        verdictPhrase = "Mixed pile — check each item before binning"
+        tipLine = "Items are split across bins — check each card for its own bin"
 
     pills = "".join(
         f'<span class="verdictPill" style="background:{FLAGS.get(v["flag"], FLAGS["Unsure"])["bg"]};">'
         f'{FLAGS.get(v["flag"], FLAGS["Unsure"])["icon"]} {v["bin_type"]} '
-        f'{max(0, min(100, int(round(v["confidence"] * 100))))}%</span>'
+        f'{max(0, min(100, int(round(v["confidence"] * 100))))}%'
+        f'{f" ×{v["count"]}" if v["count"] > 1 else ""}</span>'
         for v in vs
     )
 
     st.markdown(
         f"""
-    <div class="verdictCard" style="border-left-color: {FLAGS.get(top['flag'], FLAGS['Unsure'])['bg']};">
-        <div class="verdictName">{topPct}% confident — {verdict_bin}</div>
-        <div class="verdictTip">💡 One object counts once — most of the pile lands in {top['bin_type'].lower()}.</div>
+    <div class="verdictCard" style="border-left-color: {FLAGS.get(flag, FLAGS['Unsure'])['bg']};">
+        <div class="verdictName">{topPct}% confident — {verdictPhrase}</div>
+        <div class="verdictTip">💡 {tipLine}</div>
         <div class="verdictPills">{pills}</div>
     </div>
     """,

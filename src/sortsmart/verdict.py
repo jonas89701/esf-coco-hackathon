@@ -19,7 +19,7 @@ def _iou(boxA, boxB):
     return inter / union
 
 
-def dedupeDetections(detections, iou_threshold=DEFAULT_IOU):
+def dedupeDetections(detections, iouThreshold=DEFAULT_IOU):
     # one object can fire a pile of boxes — boxes of the same class that
     # overlap the same thing are one object, keep the highest-scoring box
     kept = []
@@ -33,7 +33,7 @@ def dedupeDetections(detections, iou_threshold=DEFAULT_IOU):
         duplicate = any(
             k.get("box")
             and k.get("class") == label
-            and _iou(box, k["box"]) >= iou_threshold
+            and _iou(box, k["box"]) >= iouThreshold
             for k in kept
         )
         if not duplicate:
@@ -54,16 +54,16 @@ def pileVerdict(detections):
     # dedupe to real objects, group by the bin they map to, combine each bin
     bins = {}
     for det in dedupeDetections(detections):
-        bin_type, flag, _ = map_waste_item(det.get("class", ""))
-        if bin_type not in bins:
-            bins[bin_type] = {"flag": flag, "confs": []}
-        bins[bin_type]["confs"].append(det.get("conf", 0.0))
+        binType, flag, _ = map_waste_item(det.get("class", ""))
+        if binType not in bins:
+            bins[binType] = {"flag": flag, "confs": []}
+        bins[binType]["confs"].append(det.get("conf", 0.0))
 
     verdict = []
-    for bin_type, info in bins.items():
+    for binType, info in bins.items():
         verdict.append(
             {
-                "bin_type": bin_type,
+                "bin_type": binType,
                 "flag": info["flag"],
                 "confidence": combineConfidences(info["confs"]),
                 "count": len(info["confs"]),
