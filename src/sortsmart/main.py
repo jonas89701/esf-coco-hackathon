@@ -381,8 +381,9 @@ with listCol:
     )
 
     st.write("")
-    renderVerdict(verdict.pileVerdict(objects))
     st.markdown(f"#### Detected items ({len(objects)})")
+    # the verdict card is the conclusion for the pile, so it sits right under the header
+    renderVerdict(verdict.pileVerdict(objects))
 
     if not objects:
         st.markdown(
